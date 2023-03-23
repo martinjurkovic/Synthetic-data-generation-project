@@ -5,6 +5,8 @@ data/*
 models/*
 !models/README.md
 
+reports/*.pkl
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
