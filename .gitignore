@@ -2,6 +2,10 @@
 data/*
 !data/README.md
 
+models/*
+!models/README.md
+
+reports/*.pkl
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
