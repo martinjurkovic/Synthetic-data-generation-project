@@ -31,23 +31,23 @@
 %----------------------------------------------------------------------------------------
 
 % Header
-\JournalInfo{FRI Data Science Project Competition 2020}
+\JournalInfo{FRI Data Science Project Competition 2023}
 
 % Interim or final report
 \Archive{Interim report} 
 %\Archive{Final report} 
 
 % Article title
-\PaperTitle{Data Science Project Competition Latex Template} 
+\PaperTitle{A Survey and Empirical Comparison of Synthetic Data Generation Methods} 
 
 % Authors (student competitors) and their info
-\Authors{John Doe, Jane Doe, and Mike Smith}
+\Authors{Valter Hudovernik and Martin Jurkovič}
 
 % Advisors
-\affiliation{\textit{Advisors: prof. Janez Novak, dr. Alica Kavčič}}
+\affiliation{\textit{Advisors: prof. dr. Erik Štrumbelj}}
 
 % Keywords
-\Keywords{Keyword1, Keyword2, Keyword3 ...}
+\Keywords{Synthetic data generation, relational data, synthetic data evaluation}
 \newcommand{\keywordname}{Keywords}
 
 
@@ -56,7 +56,7 @@
 %----------------------------------------------------------------------------------------
 
 \Abstract{
-The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here.
+Synthetic relational data generation is a niche field with growing interest in the last years from the academia and industry. We have researched the methods for generation and evaluation of synthetic tabular relational data. We will evaluate and use the best performing model to generate data from Zurich Insurance Group. They will be able to use this data for better ML models, faster data ingestion from their branches and easier GDPR compliance.
 }
 
 %----------------------------------------------------------------------------------------
@@ -68,7 +68,6 @@ The abstract goes here. The abstract goes here. The abstract goes here. The abst
 
 % Print the title and abstract box
 \maketitle 
-
 % Removes page numbering from the first page
 \thispagestyle{empty} 
 
@@ -77,162 +76,181 @@ The abstract goes here. The abstract goes here. The abstract goes here. The abst
 %----------------------------------------------------------------------------------------
 
 \section*{Introduction}
-	These latex files are intended to serve as a the template for the FRI Data Science Project Competition. If you find mistakes in the template or have problems using it, please consult Jure Demšar (\href{mailto:jure.demsar@fri.uni-lj.si}{jure.demsar@fri.uni-lj.si}).
-	
-	In the Introduction section you should write about the relevance of your work (what is the purpose of the project, what will we solve) and about related work (what solutions for the problem already exist). Where appropriate, reference scientific work conducted by other researchers. For example, the work done by Demšar et al. \cite{Demsar2016BalancedMixture} is very important for our project. The abbreviation et al. is for et alia, which in latin means and others, we use this abbreviation when there are more than two authors of the work we are citing. If there are two authors (or if there is a single author) we just write down their surnames. For example, the work done by Demšar and Lebar Bajec \cite{Demsar2017LinguisticEvolution} is also important for successful completion of our project.
+%%SYNTHETIC DATA GENERATION \\
+Synthetic data generation is a growing area of research, with 1,751 articles published in 2022 more than double the amount published in 2019. 
+This is not surprising as the applications of such methods may have significant effects on industry with over 70,000 patent for synthetic data generation filled in the last year.
+%TODO: What indicates / confirms this?. Are patents a good source?
+
+In this report we examine and evaluate methods for generating relational synthetic data. 
+This kind of data most impacts medical and financial  fields. It is also relevant for insurance companies such as our industry partner Zurich Insurance . In these domains synthetically generated data addresses privacy concerns, costs and speed of development and may even improve performance of existing models. 
+%TODO: Their benefits and possible applications
+
+%%Why is it important?  \\
+Synthetic data can help to ensure the privacy of sensitive data.
+By generating artificial data instead of using real data, it is possible to prevent the disclosure of sensitive information. 
+This is particularly important in fields such as healthcare, finance and insurance where privacy laws and regulations must be adhered to. 
+
+%% Data is the most important resource
+In many cases generating synthetic data can be more cost-effective and faster than collecting real data as it does not require additional resources or time-consuming data collection processes. 
+This is especially important in time critical situation when quick iteration and prototyping is important, as is the case with the Zurich Insurance data department.
+%% Relate to Zurich --> time critical, exploring new markets, developing new software, speeding up processes, validation of new solutions etc.
+
+Lastly with the rising complexity of predictive models, requiring more and more data, synthetically generated data can provide additional data points to supplement existing datasets. Especially in granular and segmentation analyses and can alleviate issues like class imbalance, impurities, and privacy concerns, potentially resulting in better performing models. %% Can we improve models? Yes, for vision!?
+
+
+%%ADVANCES IN GENERATIVE AI \\
+% Recent developments in generative AI models have greatly supported the advancement of synthetic data generation. 
+% Techniques such as Generative Adversarial Networks (GANs) , Variational AutoEncoders (VAEs) , and Diffusion models  have all shown great promise in generating high-quality synthetic data . %% TODO: can add more sources here
+% GANs, introduced in 2014, consist of two neural networks: a generator and a discriminator, trained together to generate realistic data. 
+% VAEs, introduced in 2013, are probabilistic models that learn a compressed representation of the data and generate new samples by sampling from this learned representation. 
+% Diffusion models, introduced in 2015, are a probabilistic approach for data synthesis that model the iterative transformation of the data distribution.
+% %, recently popularized by synthetic image generation. 
+% Finally, large language models (LLMs), such as GPT variants , 
+% % can add 2 and 3 if needed Radford2019LanguageMA, brown2020language
+% built using the transformer architecture ,
+% have shown great potential for generating realistic text data, such as natural language text or code. 
+%These models are trained on massive amounts of data and can generate coherent and grammatically correct text that can be used for various tasks, including text generation for chatbots, translation, and content creation. 
+% Together, these advances in generative AI models have greatly enhanced the potential for synthetic data generation and have opened up new avenues for research in many different fields.
+%% TODO: can add normalizing flows?? But its very simmilar to diffusion.
+%\\
+%TABULAR DATA GENERATION 
+% Closely related to relational is tabular data, which is a special case of relational data where all the information is stored in a single normalized table with independent rows.
+% Tabular data is the most common type of data found in machine learning and can come from various sources, including surveys, administrative, health and financial records. 
+% %However, these datasets may contain sensitive information that cannot be shared openly, limiting their utility. 
+% Traditional algorithms like SMOTE, ROS can replicate data distributions. 
+% However modeling complex dependencies found in such datasets is difficult for these methods and was greatly advanced by deep learning techniques like VAEs, GANs and in the recent years transformers. 
+% These provide promising methods for generating synthetic tabular data with similar statistical properties as real data. 
+% With the advance of generative models and important practical implications the generation of realistic artificial tabular data has received considerable attention in recent years .
+%\\
+%RELATIONAL DATA GENERATION \\
+Synthesizing relational databases poses additional challenges to tabular data synthesis. Additionally to modeling the distribution of each column and the relationships between them, the relationships between tables within the same database must also be taken into account. This includes four types of parent-child relationships, namely linear (with only parent-child relationships), multiple-child (with a primary key referenced by various tables), multiple-parent (with columns referencing primary keys of multiple tables), and multiple-child and multiple-parent . These relationships introduce new non-trivial constraints that generative models must address in order to effectively generate synthetic data.
+In the following section we formally define relational data and take an extensive look at relevant works for synthetic relational data generation.
+
+
+\section*{Related Work}
+% TODO refine this definition plus add parent child relationships and conditional dependencies etc.
+% We define a synthetic database $\mathcal{D}$, which consists of tables $T_i$ as $\mathcal{D} = \{T_1, T_2, ..., T_N\}$ where $T_i = {X_{i1}, X_{i2}, ..., X_{im}}$ is a table with $m$ columns, and each column $X_{ij}$ is a random variable. The rows of each table $T_i$ are random vectors $\mathbf{x}_i^1, \mathbf{x}_i^2, ..., \mathbf{x}_i^n$ with $n$ being the number of rows in $T_i$. 
+\subsection*{Relational Data Generation Methods}
+
+\textbf{The Synthetic data vault} \footnote{Citations for all methods ommited due to 2 page report limit.}by Patki N., Wedge R. and Veeramachaneni K. (2016) is an open source python library for automatic synthetic data generation and evaluation. They focus on 4 key points: creation of synthetic data for one table with their own algorithm, recursive conditional parameter aggregation technique which is a method for recursive table modeling in a relational database, privacy protection and demonstration of the utility of synthetic data. To model the data the user must specify the structure (metadata) of the data. Then the SDV model iterates through tables sequentially using a modelling algorithm designed to account for relationships between tables. For a table in the database, if other tables reference it, dependence exists and the SDV computes aggregate statistics for the other tables, which are then added to the original table, forming an extended table. 
+
+% For a single table they calculate the distribution of values in each column and covariances between columns. For relational data they developed a Conditional Parameter Aggregation (CPA) method, with which they add covariances and distributions of the child tables to the parent tables. They calculate the overall table model with the Gaussian Copula. 
+\\
+
+\textbf{Row Conditional-Tabular Generative Adversarial Network (RC-TGAN)} is a generative adversarial network (GAN) model that extends the tabular GAN to support modeling and synthesizing relational databases, proposed by Gueye M., Atta. and Dumas M. (2022). The model extends the original TGAN model to support relational datasets by incorporating conditional data from parent rows into the design of the GAN model corresponding to the child table. RC-TGAN has the inherent ability to address all relationship schemas without additional processing steps. They also extend RC-TGAN to maximize the capture of the influence that grandparent (or higher-level ancestor) rows may also have on their grandchild rows, thus preventing the loss of this connection when the parent table rows fail to transfer this relationship information. 
+
+% They assume that the relationship information linking the tables can be extracted from the rows of the parent tables when modeling or generating the child table rows. Each row of a table with parent tables is generated by a conditional distribution of a table conditional on the parent tables. The generator of the RC-TGAN takes as input the noise vector and additionally the features of the parent rows. The distribution of root tables in a database, i.e., tables with no parent(s), are modeled without inputs from other tables, as in conventional tabular GANs. 
+
+% Data synthesis is based on the row conditional generator trained for each table. It is important that we first sample the table with no parent(s), and then sample the tables for which parents are already sampled until we cover all the tables in the database. This allows using the synthesized parent rows as features when generating child table rows to create the relationship information. The grandparent-grandchild relationship is based on the assumption that the relationship is not always transmitted via the parent table. They expand the set of features used as conditional data of the child table in RC-TGAN to include ancestor features when this information is available, instead of limiting ourselves to parent features.
+\\
+
+\textbf{Realistic Relational and Tabular Transformer} proposed by Solatorio A. and Dupriez O. (2023) is a relational synthetic data generation model based on GPT-2 . To the best of our knowledge this model may only generate single parent relational data. The method treats the parent table independently and models it using a non-relational tabular data model with a GPT-2 encoder with a causal language model (LM) head. After training the parent table model, the encoder part of the generator is frozen and used to conditionally model the child tables. For each child table a new model needs to be constructed with the following structure. The conditional model is a sequence-to-sequence (Seq2Seq) transformer.
+It uses the pretrained parent encoder and trains the GPT-2 decoder with a causal LM head to conditionally generate observations from the child table of arbitrary length.
+
+% Both models are trained to generate data in an auto-regressive manner. This may be exploited during sampling to produce synthetic samples with certain properties of interest. During training of the child table model all of the observations for a single parent row are concatenated, therefore the model must implicitly infer the number of child rows based on the context of the parent row. % This could be a problem??
+% The method generates a fixed vocabulary for each column in the table. The vocabulary consists of tokens, combinations of which encode the possible values of the columns distribution. Missing values are encoded using a designated token, so the model may also learn possible patterns of missingness. All values are treated as text and are transformed back into their intended formats after generation. 
+
+% The authors propose strategies for privacy-preserving training of the model  to prevent the model from “memorizing” and copying observations in the training data during sampling. 
+%Using distance to closest record (DCR), bootstraping and token masking
+\\
+
+Additionally we found many commercial tools for synthetic data generation. However, of the ones we evaluated only two support generation of relational data: \textbf{MostlyAI} and \textbf{GretelAI}.
+
+\subsection*{Synthetic Data Evaluation}
+%% distance to closest record DCR (a data-copying measure) used in RealTabFormer??! 
+Like synthetic data generation methods, evaluation methods are split between evaluating single table or hierarchical data.
+
+SDMetrics is an open source evaluation library for synthetic data, developed by the organization DataCebo, which is also the organization behind the SDV library. They split their metrics by data granularity. \\\\
+\textbf{Metrics implemented in the SDMetrics library}\\
+\textbf{For single column}:\\
+- \textit{Category} and \textit{Range Coverage}: measures whether a synthetic column covers all the possible categories or covers the full range of the values present in a real column.\\
+- \textit{Boundary Adherence}: the comparison of minimum/maximum ranges\\
+- \textit{KSComplement, TVComplement}: comparison of shapes (marginal distributions, histograms). KSComplement uses the Kolmogorov-Smirnov statistic for numerical data, whereas TVComplement computes the Total Variation Distance (TVD) between the real and synthetic categorical columns.\\
+- \textit{Statistic Similarity}: comparison of summary statistics (mean, median and standard deviation).\\
+- \textit{Missing value similarity}\\ \\
+\textbf{For column pairs}:\\
+- \textit{Contingency Similarity}: comparison of 2D distributions.\\
+- \textit{Correlation Similarity}\\
+% \textbf{For single table}:\\
+% - \textit{Novel Row Synthesis}: compute exact matches\\
+% - \textit{Categorical CAP}: measure privacy against inference attacks with the CAP algorithm. \\
+% - \textit{Logistic and SVC Detection}: Train a model with the goal of categorizing whether rows in the dataset belong to a real or synthetic table. \\
+% - \textit{ML Efficacy}: a set of metrics that calculate the success of using synthetic data to perform an ML prediction task. The metrics are calculated for the following tasks: binary classification, multiclass classification and regression. \\ \\
+% \textbf{For multi table}:\\
+% - \textit{Cardinality Shape Similarity}: measures whether the cardinality of the parent table is the same between the real and synthetic datasets. The cardinality is defined as the number of child rows for each parent. \\
+For relational data, there are not many developed metrics. The most used metric is Logistic Detection (LD) metric, where for each table in the hierarchical dataset it's synthetic pair is used to calculate LD. An extension of LD is also used to evaluate the ability of the generative model to preserve the parent-child relationship by applying LD on the denormalized synthetic tables, referred to as parent-child logistic detection (P-C LD). 
+
+% \subsection*{Energy statistics}
+% TODO \\
+
+%------------------------------------------------
+
+\section*{Experimental Results}
+
+\subsection*{Datasets}
+
+\textbf{Linear relationships}: Airbnb , Rossmann , Bio\-degradability , Mutagenesis \\
+\textbf{Multiple-child relationships}: Telstra , Walmart  \\
+\textbf{Multiple child and parent relationships}: Coupon Purchase Prediction 
+% verly big - World Development Indicators (https://www.kaggle.com/datasets/theworldbank/world-development-indicators) \\
+
+\subsection*{Zurich Customers Dataset}
+Zurich Insurance Company provided an anonymized and sampled dataset from the usage data of their platform. The data was automatically generated based on the real data from the company's database.
+The obtained data is split into three datasets: customer data, policy data and claim data. Datasets are connected using primary and foreign keys. Primary key of a customer is available as a foreign key for policies and claims. Primary key of a policy is available as a foreign key in claims.
+
+% \subsection*{Results}
+
+% \begin{table}[!h]
+%     \begin{tabular}{| l | l | l | r |}
+%     \hline
+%       Method        & Cat. enc. & Num. only &  NA imp. \\
+%       \hline			 
+%       Resampled       & 0 & 0 &  2765 \\
+%       \hline			
+%       mostly.ai        &  3119  &  3119&  \textbf{6954}\\
+%       gretel.ai       &  \textbf{1425}  & \textbf{1425} & 68502\\
+%       RealTabFormer  &  15879 & 15879&  44160\\
+%       SDV           &  77082 &  77084 & 120981\\
+%       \hline
+%     \end{tabular}
+%     \caption{Energy Statistic Results on a single Table}
+%     \label{tab:energy_score}
+% \end{table}
+
+% \begin{table}[ht]
+%     \begin{tabular}{| l | l | l | r |}
+%     \hline
+%       Method        & Cat. enc. & Num. only &  NA imp. \\
+%       \hline			 
+%       Resampled       &1     & 1 &  1  \\
+%       \hline			
+%       mostly.ai        &  \textbf{0.82}  &  \textbf{0.82}  &  \textbf{0.45}\\
+%       gretel.ai       &  \textbf{0.82}  & \textbf{0.82} &  0.09 \\
+%       RealTabFormer  &  0.09 & 0.09 &  0.09\\
+%       SDV           &  0.09 &  0.09  & 0.09\\
+%       \hline
+%     \end{tabular}
+%     \caption{Energy Statistic p-value Results on a single Table}
+%     \label{tab:energy_values}
+% \end{table}
+
+%------------------------------------------------
+
+\section*{Future work}
+Now that we have thoroughly researched the methods for generating synthetic relational data we will apply and evaluate the methods on the Zurich Customers dataset, as well as on the other datasets used in research papers to evaluate the performance of the models. Beside that we will also try to evaluate the performance of the models used by ZCAM d.o.o. by training them on the synthetic data.
+
 
 
 %------------------------------------------------
 
-\section*{Methods}
-
-Use the Methods section to describe what you did an how you did it -- in what way did you prepare the data, what algorithms did you use, how did you test various solutions ... Provide all the required details for a reproduction of your work.
-
-Below are \LaTeX examples of some common elements that you will probably need when writing your report (e.g. figures, equations, lists, code examples ...).
-
-
-\subsection*{Equations}
-
-You can write equations inline, e.g. $\cos\pi=-1$, $E = m \cdot c^2$ and $\alpha$, or you can include them as separate objects. The Bayes’s rule is stated mathematically as:
-
-\begin{equation}
-	P(A|B) = \frac{P(B|A)P(A)}{P(B)},
-	\label{eq:bayes}
-\end{equation}
-
-where $A$ and $B$ are some events. You can also reference it -- the equation \ref{eq:bayes} describes the Bayes's rule.
-
-\subsection*{Lists}
-
-We can insert numbered and bullet lists:
-
-% the [noitemsep] option makes the list more compact
-\begin{enumerate}[noitemsep] 
-	\item First item in the list.
-	\item Second item in the list.
-	\item Third item in the list.
-\end{enumerate}
-
-\begin{itemize}[noitemsep] 
-	\item First item in the list.
-	\item Second item in the list.
-	\item Third item in the list.
-\end{itemize}
-
-We can use the description environment to define or describe key terms and phrases.
-
-\begin{description}
-	\item[Word] What is a word?.
-	\item[Concept] What is a concept?
-	\item[Idea] What is an idea?
-\end{description}
-
-
-\subsection*{Random text}
-
-This text is inserted only to make this template look more like a proper report. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam blandit dictum facilisis. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Interdum et malesuada fames ac ante ipsum primis in faucibus. Etiam convallis tellus velit, quis ornare ipsum aliquam id. Maecenas tempus mauris sit amet libero elementum eleifend. Nulla nunc orci, consectetur non consequat ac, consequat non nisl. Aenean vitae dui nec ex fringilla malesuada. Proin elit libero, faucibus eget neque quis, condimentum laoreet urna. Etiam at nunc quis felis pulvinar dignissim. Phasellus turpis turpis, vestibulum eget imperdiet in, molestie eget neque. Curabitur quis ante sed nunc varius dictum non quis nisl. Donec nec lobortis velit. Ut cursus, libero efficitur dictum imperdiet, odio mi fermentum dui, id vulputate metus velit sit amet risus. Nulla vel volutpat elit. Mauris ex erat, pulvinar ac accumsan sit amet, ultrices sit amet turpis.
-
-Phasellus in ligula nunc. Vivamus sem lorem, malesuada sed pretium quis, varius convallis lectus. Quisque in risus nec lectus lobortis gravida non a sem. Quisque et vestibulum sem, vel mollis dolor. Nullam ante ex, scelerisque ac efficitur vel, rhoncus quis lectus. Pellentesque scelerisque efficitur purus in faucibus. Maecenas vestibulum vulputate nisl sed vestibulum. Nullam varius turpis in hendrerit posuere.
-
-
-\subsection*{Figures}
-
-You can insert figures that span over the whole page, or over just a single column. The first one, \figurename~\ref{fig:column}, is an example of a figure that spans only across one of the two columns in the report.
-
-\begin{figure}[ht]\centering
-	\includegraphics[width=\linewidth]{single_column.pdf}
-	\caption{\textbf{A random visualization.} This is an example of a figure that spans only across one of the two columns.}
-	\label{fig:column}
-\end{figure}
-
-On the other hand, \figurename~\ref{fig:whole} is an example of a figure that spans across the whole page (across both columns) of the report.
-
-% \begin{figure*} makes the figure take up the entire width of the page
-\begin{figure*}[ht]\centering 
-	\includegraphics[width=\linewidth]{whole_page.pdf}
-	\caption{\textbf{Visualization of a Bayesian hierarchical model.} This is an example of a figure that spans the whole width of the report.}
-	\label{fig:whole}
-\end{figure*}
-
-
-\subsection*{Tables}
-
-Use the table environment to insert tables.
-
-\begin{table}[hbt]
-	\caption{Table of grades.}
-	\centering
-	\begin{tabular}{l l | r}
-		\toprule
-		\multicolumn{2}{c}{Name} \\
-		\cmidrule(r){1-2}
-		First name & Last Name & Grade \\
-		\midrule
-		John & Doe & $7.5$ \\
-		Jane & Doe & $10$ \\
-		Mike & Smith & $8$ \\
-		\bottomrule
-	\end{tabular}
-	\label{tab:label}
-\end{table}
-
-
-\subsection*{Code examples}
-
-You can also insert short code examples. You can specify them manually, or insert a whole file with code. Please avoid inserting long code snippets, advisors will have access to your repositories and can take a look at your code there. If necessary, you can use this technique to insert code (or pseudo code) of short algorithms that are crucial for the understanding of the manuscript.
-
-\lstset{language=Python}
-\lstset{caption={Insert code directly from a file.}}
-\lstset{label={lst:code_file}}
-\lstinputlisting[language=Python]{code/example.py}
-
-\lstset{language=R}
-\lstset{caption={Write the code you want to insert.}}
-\lstset{label={lst:code_direct}}
-\begin{lstlisting}
-import(dplyr)
-import(ggplot)
-
-ggplot(diamonds,
-	   aes(x=carat, y=price, color=cut)) +
-  geom_point() +
-  geom_smooth()
-\end{lstlisting}
-
-%------------------------------------------------
-
-\section*{Results}
-
-Use the results section to present the final results of your work. Present the results in a objective and scientific fashion. Use visualisations to convey your results in a clear and efficient manner. When comparing results between various techniques use appropriate statistical methodology.
-
-\subsection*{More random text}
-
-This text is inserted only to make this template look more like a proper report. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam blandit dictum facilisis. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Interdum et malesuada fames ac ante ipsum primis in faucibus. Etiam convallis tellus velit, quis ornare ipsum aliquam id. Maecenas tempus mauris sit amet libero elementum eleifend. Nulla nunc orci, consectetur non consequat ac, consequat non nisl. Aenean vitae dui nec ex fringilla malesuada. Proin elit libero, faucibus eget neque quis, condimentum laoreet urna. Etiam at nunc quis felis pulvinar dignissim. Phasellus turpis turpis, vestibulum eget imperdiet in, molestie eget neque. Curabitur quis ante sed nunc varius dictum non quis nisl. Donec nec lobortis velit. Ut cursus, libero efficitur dictum imperdiet, odio mi fermentum dui, id vulputate metus velit sit amet risus. Nulla vel volutpat elit. Mauris ex erat, pulvinar ac accumsan sit amet, ultrices sit amet turpis.
-
-Phasellus in ligula nunc. Vivamus sem lorem, malesuada sed pretium quis, varius convallis lectus. Quisque in risus nec lectus lobortis gravida non a sem. Quisque et vestibulum sem, vel mollis dolor. Nullam ante ex, scelerisque ac efficitur vel, rhoncus quis lectus. Pellentesque scelerisque efficitur purus in faucibus. Maecenas vestibulum vulputate nisl sed vestibulum. Nullam varius turpis in hendrerit posuere.
-
-Nulla rhoncus tortor eget ipsum commodo lacinia sit amet eu urna. Cras maximus leo mauris, ac congue eros sollicitudin ac. Integer vel erat varius, scelerisque orci eu, tristique purus. Proin id leo quis ante pharetra suscipit et non magna. Morbi in volutpat erat. Vivamus sit amet libero eu lacus pulvinar pharetra sed at felis. Vivamus non nibh a orci viverra rhoncus sit amet ullamcorper sem. Ut nec tempor dui. Aliquam convallis vitae nisi ac volutpat. Nam accumsan, erat eget faucibus commodo, ligula dui cursus nisi, at laoreet odio augue id eros. Curabitur quis tellus eget nunc ornare auctor.
-
-
-%------------------------------------------------
-
-\section*{Discussion}
-
-Use the Discussion section to objectively evaluate your work, do not just put praise on everything you did, be critical and exposes flaws and weaknesses of your solution. You can also explain what you would do differently if you would be able to start again and what upgrades could be done on the project in the future.
-
-
-%------------------------------------------------
-
-\section*{Acknowledgments}
-
-Here you can thank other persons (advisors, colleagues ...) that contributed to the successful completion of your project.
+% \section*{Acknowledgments}
 
 
 %----------------------------------------------------------------------------------------
 %	REFERENCE LIST
 %----------------------------------------------------------------------------------------
-\bibliographystyle{unsrt}
-\bibliography{report}
+% \bibliographystyle{unsrt}
+% \bibliography{report}
 
 
 \end{document}
