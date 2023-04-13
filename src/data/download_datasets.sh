@@ -17,8 +17,8 @@ mv rossmann-store-sales.zip data/rossmann-store-sales.zip
 kaggle competitions download -c coupon-purchase-prediction
 mv coupon-purchase-prediction.zip data/coupon-purchase-prediction.zip
 
-# World Development Indicators
-kaggle datasets download -d theworldbank/world-development-indicators
-mv world-development-indicators.zip data/world-development-indicators.zip
+# # World Development Indicators
+# kaggle datasets download -d theworldbank/world-development-indicators
+# mv world-development-indicators.zip data/world-development-indicators.zip
 
 python src/data/extract_datasets.py

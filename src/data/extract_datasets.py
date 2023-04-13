@@ -23,24 +23,4 @@ for file in os.listdir(DATA_DIR):
         # delete the __MACOSX folder if it exists
         if os.path.exists(f'{unzip_path}/__MACOSX'):
             os.rmdir(f'{unzip_path}/__MACOSX')
-        
-# move the files for the world-development-indicators dataset from the wdi-csv-zip-57-mb- subfolder to the main folder
-if os.path.exists(f'{DATA_DIR}/world-development-indicators/wdi-csv-zip-57-mb-'):
-    for file in os.listdir(f'{DATA_DIR}/world-development-indicators/wdi-csv-zip-57-mb-'):
-        filepath = f'{DATA_DIR}/world-development-indicators/wdi-csv-zip-57-mb-/{file}'
-        if os.path.isfile(filepath):
-            os.rename(filepath, f'{DATA_DIR}/world-development-indicators/{file}')
-
-# remove information-about-wdi-revisions-excel-912-kb-.xlsx
-to_remove = [f'{DATA_DIR}/world-development-indicators/information-about-wdi-revisions-excel-912-kb-.xls',
-             f'{DATA_DIR}/world-development-indicators/wdi-csv-zip-57-mb-',
-             f'{DATA_DIR}/world-development-indicators/wdi-excel-zip-59-mb-'
-]
-
-for file in to_remove:
-    if os.path.exists(file):
-        if os.path.isfile(file):
-            os.remove(file)
-        else:
-            shutil.rmtree(file)
             
