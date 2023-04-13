@@ -13,3 +13,8 @@
 * 24. (1h): Meeting with mentor Strumbelj Erik.
 * 30. (8h): Research on relational data generators, evaluation methods and datasets
 
+## April 2023 (27h)
+* 6. (8h): Energy statistics literature review and multicolumn visualizations
+* 10. (10h): Energy statistic implementation, interim report
+* 12. (1h): Meeting with mentor Strumbelj Erik, interim report review, project outline review
+* 13. (8h): Interim report corrections, dataset collection for data splits, data generation (Gretelai sql)
