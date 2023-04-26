@@ -22,5 +22,5 @@ for file in os.listdir(DATA_DIR):
         os.remove(zip_path)
         # delete the __MACOSX folder if it exists
         if os.path.exists(f'{unzip_path}/__MACOSX'):
-            os.rmdir(f'{unzip_path}/__MACOSX')
+            shutil.rmtree(f'{unzip_path}/__MACOSX')
             
