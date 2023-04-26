@@ -2,7 +2,7 @@ import os
 import shutil
 import zipfile
 
-DATA_DIR = 'data'
+DATA_DIR = 'data/original'
 
 #for zip in datadir unzip the dataset
 for file in os.listdir(DATA_DIR):
