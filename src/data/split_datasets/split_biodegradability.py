@@ -102,3 +102,8 @@ gmember_folds = utils.split_k_fold_on_multiple_parents(
 )
 
 # %%
+utils.save_folds(
+    [molecule_folds, atom_folds, bond_folds, gmember_folds, group_folds],
+    dataset_name,
+    ["molecule", "atom", "bond", "gmember", "group"])
+# %%

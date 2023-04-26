@@ -82,4 +82,19 @@ def split_k_fold_on_multiple_parents(parents_folds, child_table, split_col_names
                 child_train_indexes = child_train.index.intersection(child_folds[j][0].index)
                 child_test_indexes = child_test.index.intersection(child_folds[j][1].index)
                 child_folds[j] = (child_folds[j][0].loc[child_train_indexes], child_folds[j][1].loc[child_test_indexes])
+    return child_folds
 
+def save_folds(table_folds, dataset_name, table_names):
+    cwd = os.getcwd()
+    cwd_project = cwd.split(
+        'Synthetic-data-generation-project')[0] + 'Synthetic-data-generation-project'
+    path = cwd_project + '/data/splits/' + dataset_name + '/'
+
+    # create directory if it doesn't exist
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    for i, temp_folds in enumerate(table_folds):
+        for j, (train, test) in enumerate(temp_folds):
+            train.to_csv(f'{path}/{dataset_name}_{table_names[i]}_fold_{j}_train.csv')
+            test.to_csv(f'{path}/{dataset_name}_{table_names[i]}_fold_{j}_test.csv')
