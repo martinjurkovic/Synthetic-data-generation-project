@@ -18,15 +18,6 @@ def read_tables(dataset_name, split_by="-", name_index=-1, **kwargs):
     return tables
 
 
-def save_metadata(metadata, dataset_name):
-    cwd = os.getcwd()
-    cwd_project = cwd.split(
-        'Synthetic-data-generation-project')[0] + 'Synthetic-data-generation-project'
-    path = cwd_project + '/data/metadata'
-
-    metadata.to_json(f'{path}/{dataset_name}_metadata.json')
-
-
 def split_k_fold(df, n_splits=10, shuffle=True, random_state=42):
     kf = KFold(n_splits=n_splits, shuffle=shuffle, random_state=random_state)
     folds = []
