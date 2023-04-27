@@ -4,6 +4,7 @@ from sklearn import metrics
 from scipy.spatial.distance import jensenshannon
 from scipy.special import kl_div
 from scipy.stats import chisquare, ks_2samp
+from sklearn.metrics.pairwise import pairwise_distances
 
 def get_frequency(
     original: pd.DataFrame, synthetic: pd.DataFrame, nbins: int = 10
@@ -178,3 +179,20 @@ def discriminative_measure(original, synthetic):
     Calculate the discriminative measure using a ML model.
     """
     pass
+
+def distance_to_closest_record(original, synthetic):
+    """
+    Calculate the distance to the closest record.
+    """
+    distances = pairwise_distances(original, synthetic, metric='manhattan')
+    return np.min(distances, axis=1)
+
+def nearest_neighbour_distance_ratio(original, synthetic):
+    """
+    Calculate the distance to the closest record.
+    """
+    distances = pairwise_distances(original, synthetic, metric='manhattan')
+    distances = np.sort(distances, axis=1)
+    nearest = distances[:, 0]
+    second_nearest = distances[:, 1]
+    return nearest / second_nearest
