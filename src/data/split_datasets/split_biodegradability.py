@@ -1,11 +1,5 @@
 # %%
 import utils
-import os
-import pandas as pd
-from sdv import Metadata
-from sdv.utils import display_tables
-from sklearn.model_selection import KFold
-
 
 # %%
 # READ DATA
