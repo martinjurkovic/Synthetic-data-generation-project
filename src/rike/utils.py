@@ -5,21 +5,26 @@ CWD_PROJECT = os.getcwd().split(
     'Synthetic-data-generation-project')[0] + 'Synthetic-data-generation-project'
 
 
-def read_tables(dataset_name, leave_out_fold_num, type, split_by="_", name_index=1, **kwargs):
+def read_tables(dataset_name, test_fold_index, type, synthetic, method_name=None, split_by="_", name_index=1, **kwargs):
     cwd = os.getcwd()
     cwd_project = cwd.split(
         'Synthetic-data-generation-project')[0] + 'Synthetic-data-generation-project'
-    path = cwd_project + '/data/splits/' + dataset_name + '/'
+    mid_path = ''
+    if synthetic:
+        mid_path = '/data/synthetic/'
+        path = cwd_project + '/data/synthetic/' + dataset_name + '/' + method_name + '/'
+    else:
+        path = cwd_project + '/data/splits/' + dataset_name + '/'
     tables = {}
     for file in os.listdir(path):
         if file.endswith(".csv"):
             table_name = file[:-4].split(split_by)[name_index]
             fold = file[:-4].split(split_by)[-1]
-            if fold == str(leave_out_fold_num) and type == "test":
+            if fold == str(test_fold_index) and type == "test":
                 table = pd.read_csv(
                     path + f'{"/" if path[-1] != "/" else ""}' + file, **kwargs)
                 tables[table_name] = table
-            elif fold != str(leave_out_fold_num) and type == "train":
+            elif fold != str(test_fold_index) and type == "train":
                 table = pd.read_csv(
                     path + f'{"/" if path[-1] != "/" else ""}' + file, **kwargs)
                 if table_name not in tables:
@@ -29,9 +34,9 @@ def read_tables(dataset_name, leave_out_fold_num, type, split_by="_", name_index
     return tables
 
 
-def get_train_test_split(dataset_name, leave_out_fold_num):
-    tables_train = read_tables(dataset_name, leave_out_fold_num, "train")
-    tables_test = read_tables(dataset_name, leave_out_fold_num, "test")
+def get_train_test_split(dataset_name, test_fold_index, synthetic=False, method_name = None):
+    tables_train = read_tables(dataset_name, test_fold_index, "train", synthetic, method_name)
+    tables_test = read_tables(dataset_name, test_fold_index, "test", synthetic, method_name)
     return tables_train, tables_test
 
 
@@ -48,10 +53,3 @@ def read_original_tables(dataset_name, split_by="-", name_index=-1, **kwargs):
                 path + f'{"/" if path[-1] != "/" else ""}' + file, **kwargs)
             tables[table_name] = table
     return tables
-
-
-def save_SDV_data(tables_synthetic, dataset_name, leave_out_fold_num):
-    path = CWD_PROJECT + '/data/synthetic/' + dataset_name + '/' + "SDV" + '/'
-    for table_name, table in tables_synthetic.items():
-        table.to_csv(
-            path + f'{dataset_name}_{table_name}_fold_{leave_out_fold_num}.csv', index=False)
