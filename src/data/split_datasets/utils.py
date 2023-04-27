@@ -22,9 +22,9 @@ def split_k_fold(df, n_splits=10, shuffle=True, random_state=42):
     kf = KFold(n_splits=n_splits, shuffle=shuffle, random_state=random_state)
     folds = []
     for train_index, test_index in kf.split(df):
-        train_fold = df.iloc[train_index]
+        # train_fold = df.iloc[train_index]
         test_fold = df.iloc[test_index]
-        folds.append((train_fold, test_fold))
+        folds.append(test_fold)
     return folds
 
 def split_on_parent(parent_folds, child_table, left_on, right_on):
@@ -39,22 +39,18 @@ def split_on_parent(parent_folds, child_table, left_on, right_on):
 
 def split_k_fold_on_parent(parent_folds, child_table, split_col_names):
     child_folds = []
-    for i, (parent_train, parent_test) in enumerate(parent_folds):
+    for i, parent_test in enumerate(parent_folds):
         # get indexes of rows in child table which have molecule_id in parent_train
-        child_train_indexes = []
         child_test_indexes = []
         for idx, (split_child, split_parent)  in enumerate(split_col_names):
             if idx == 0:
-                child_train_indexes = child_table[child_table[split_child].isin(parent_train[split_parent])].index
                 child_test_indexes = child_table[child_table[split_child].isin(parent_test[split_parent])].index
             else:
                 # keep only indexes in child_train_indexes of rows in child table which have molecule_id in parent_train
-                child_train_indexes = child_table[child_table[split_child].isin(parent_train[split_parent])].index.intersection(child_train_indexes)
                 child_test_indexes = child_table[child_table[split_child].isin(parent_test[split_parent])].index.intersection(child_test_indexes)
 
-        child_train = child_table.iloc[child_train_indexes]
         child_test = child_table.iloc[child_test_indexes]
-        child_folds.append((child_train, child_test))
+        child_folds.append(child_test)
     return child_folds
 
 def split_k_fold_on_multiple_parents(parents_folds, child_table, split_col_names):
@@ -68,11 +64,10 @@ def split_k_fold_on_multiple_parents(parents_folds, child_table, split_col_names
             child_folds = split_k_fold_on_parent(parent_folds, child_table, split_col_names[i])
         else:
             temp_folds = split_k_fold_on_parent(parent_folds, child_table, split_col_names[i])
-            for j, (child_train, child_test) in enumerate(temp_folds):
+            for j, child_test in enumerate(temp_folds):
                 # get an intersection of indexes of child_train and child_folds[j][0]
-                child_train_indexes = child_train.index.intersection(child_folds[j][0].index)
-                child_test_indexes = child_test.index.intersection(child_folds[j][1].index)
-                child_folds[j] = (child_folds[j][0].loc[child_train_indexes], child_folds[j][1].loc[child_test_indexes])
+                child_test_indexes = child_test.index.intersection(child_folds[j].index)
+                child_folds[j] = child_folds[j].loc[child_test_indexes]
     return child_folds
 
 def save_folds(table_folds, dataset_name, table_names):
@@ -86,6 +81,6 @@ def save_folds(table_folds, dataset_name, table_names):
         os.makedirs(path)
 
     for i, temp_folds in enumerate(table_folds):
-        for j, (train, test) in enumerate(temp_folds):
-            train.to_csv(f'{path}/{dataset_name}_{table_names[i]}_fold_{j}_train.csv')
-            test.to_csv(f'{path}/{dataset_name}_{table_names[i]}_fold_{j}_test.csv')
+        for j, test in enumerate(temp_folds):
+            # train.to_csv(f'{path}/{dataset_name}_{table_names[i]}_fold_{j}_train.csv')
+            test.to_csv(f'{path}/{dataset_name}_{table_names[i]}_fold_{j}.csv')
