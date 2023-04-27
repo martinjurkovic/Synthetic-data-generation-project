@@ -83,4 +83,4 @@ def save_folds(table_folds, dataset_name, table_names):
     for i, temp_folds in enumerate(table_folds):
         for j, test in enumerate(temp_folds):
             # train.to_csv(f'{path}/{dataset_name}_{table_names[i]}_fold_{j}_train.csv')
-            test.to_csv(f'{path}/{dataset_name}_{table_names[i]}_fold_{j}.csv')
+            test.to_csv(f'{path}/{dataset_name}_{table_names[i]}_fold_{j}.csv', index=False)
