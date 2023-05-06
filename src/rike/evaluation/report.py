@@ -67,13 +67,13 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
                                       original_train=tables_orig_train[table_name], synthetic_train=tables_synthetic_train[table_name], metadata = metadata.to_dict()['tables'][table_name])
                 if table_name not in metrics_report["metrics"]["single_table"].keys():
                     metrics_report["metrics"]["single_table"][table_name] = {}
-                if metric_name not in metrics_report["metrics"]["single_table"][table_name]:
+                if metric_name not in metrics_report["metrics"]["single_table"][table_name] or k == 0:
                     metrics_report["metrics"]["single_table"][table_name][metric_name] = {
                         "scores": []}
                 metrics_report["metrics"]["single_table"][table_name][metric_name]["scores"].append(
                     metric_value)
             if 'cardinality' in multi_table_metrics:
-                if 'cardinality' not in metrics_report["metrics"]["single_table"][table_name]:
+                if 'cardinality' not in metrics_report["metrics"]["single_table"][table_name] or k == 0:
                     metrics_report["metrics"]["single_table"][table_name]['cardinality'] = {
                         "scores": []}
                 for score in cardinality[table_name]:
