@@ -52,6 +52,9 @@ def read_original_tables(dataset_name, split_by="-", name_index=-1, **kwargs):
 
 def save_SDV_data(tables_synthetic, dataset_name, leave_out_fold_num):
     path = CWD_PROJECT + '/data/synthetic/' + dataset_name + '/' + "SDV" + '/'
+    # create directory if not exists
+    if not os.path.exists(path):
+        os.makedirs(path)
     for table_name, table in tables_synthetic.items():
         table.to_csv(
             path + f'{dataset_name}_{table_name}_fold_{leave_out_fold_num}.csv', index=False)
