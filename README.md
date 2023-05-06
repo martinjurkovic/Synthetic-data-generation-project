@@ -20,3 +20,15 @@ The project is divided into two parts. The first part is the research of generat
 Most of the work for the research part is in `/notebooks` folder.
 
 For file structure we follow the [cookiecutter data science template](https://drivendata.github.io/cookiecutter-data-science/).
+
+## Building the RIKE package
+
+To build and install the RIKE package locally run the following command in the root of the project:
+
+```bash
+pip install wheel
+
+python setup.py sdist bdist_wheel
+
+pip install --find-links=dist rike
+```
