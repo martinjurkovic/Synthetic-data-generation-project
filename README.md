@@ -32,3 +32,9 @@ python setup.py sdist bdist_wheel
 
 pip install --find-links=dist rike
 ```
+
+or alternatively install in develop mode:
+
+```bash
+python setup.py develop
+```
