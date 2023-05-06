@@ -6,7 +6,7 @@ import pandas as pd
 
 from rike.generation import sdv_metadata
 from rike.utils import get_train_test_split, read_original_tables
-from rike.evaluation.metrics import ks_test, chisquare_test, mean_max_discrepency, js_divergence, cardinality_similarity, discriminative_detection
+from rike.evaluation.metrics import ks_test, cardinality_similarity
 
 
 def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], multi_table_metrics = ['cardinality'], save_report=False):
