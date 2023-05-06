@@ -6,7 +6,7 @@ import pandas as pd
 
 from rike.generation import sdv_metadata
 from rike.utils import get_train_test_split, read_original_tables
-from rike.evaluation.metrics import ks_test, chisquare_test, mean_max_discrepency, js_divergence, cardinality_similarity, logistic_detection
+from rike.evaluation.metrics import ks_test, chisquare_test, mean_max_discrepency, js_divergence, cardinality_similarity, discriminative_detection
 
 
 def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], multi_table_metrics = ['cardinality'], save_report=False):
@@ -26,7 +26,7 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
     for table, fields in metadata.to_dict()['tables'].items():
         categorical[table] = {}
         for field, values in fields['fields'].items():
-            if values['type'] == 'id' and values['subtype'] == 'string':
+            if (values['type'] == 'id' and values['subtype'] == 'string') or values['type'] == 'categorical':
                 categorical[table][field] = tables_original[table][field].unique()
                 print(table, categorical[table][field])
 
@@ -38,8 +38,10 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
         
         for table, fields in categorical.items():
             for field, values in fields.items():
-                tables_orig_test[table][field] = pd.Categorical(tables_orig_test[table][field], categories=values[field])
-                tables_synthetic_test[table][field] = pd.Categorical(tables_synthetic_test[table][field], categories=values[field])
+                # remove nan values from values numpy array
+                values = values[~pd.isnull(values)]
+                tables_orig_test[table][field] = pd.Categorical(tables_orig_test[table][field], categories=values)
+                tables_synthetic_test[table][field] = pd.Categorical(tables_synthetic_test[table][field], categories=values)
         
         
         

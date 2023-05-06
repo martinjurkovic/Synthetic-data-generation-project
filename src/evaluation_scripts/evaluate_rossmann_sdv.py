@@ -1,15 +1,16 @@
 # %%
-from rike.evaluation.metrics import ks_test, chisquare_test, mean_max_discrepency, js_divergence, logistic_detection
+from rike.evaluation.metrics import ks_test, chisquare_test, mean_max_discrepency, js_divergence, discriminative_detection
 from rike.evaluation.report import generate_report
 import json
 
-DATASET_NAME = "biodegradability"
+DATASET_NAME = "rossmann-store-sales"
 METHOD_NAME = "sdv"
 
 
 # %%
-single_table_metrics = [ks_test,
-                        logistic_detection,
+single_table_metrics = [
+                        # ks_test,
+                        discriminative_detection,
                         # chisquare_test,
                         # mean_max_discrepency,
                         # js_divergence,

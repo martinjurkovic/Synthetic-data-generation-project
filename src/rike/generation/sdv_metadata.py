@@ -31,6 +31,12 @@ def generate_rossman_metadata(dataset_name, original_data, save_metadata=False):
         name='test',
         data=original_data['test'],
         primary_key='Id',
+        fields_metadata={
+            'Date': {
+                'type': 'datetime',
+                'format': '%Y-%m-%d'
+            },
+        }
     )
 
     metadata.add_relationship(
