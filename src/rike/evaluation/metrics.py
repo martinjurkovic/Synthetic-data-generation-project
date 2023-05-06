@@ -11,6 +11,8 @@ from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score, log_loss
 from sdmetrics.utils import HyperTransformer
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neural_network import MLPClassifier
 
 
 def get_frequency(
@@ -226,11 +228,23 @@ def cardinality_similarity(tables_original, tables_synthetic, metadata, **kwargs
 def logistic_detection(original_test, synthetic_test, original_train, synthetic_train, **kwargs):
     return discriminative_detection(original_test, synthetic_test, original_train, synthetic_train, clf=LogisticRegression(solver='lbfgs'), **kwargs)
 
+
 def random_forest_detection(original_test, synthetic_test, original_train, synthetic_train, **kwargs):
     return discriminative_detection(original_test, synthetic_test, original_train, synthetic_train, clf=RandomForestClassifier(), **kwargs)
 
+
 def svm_detection(original_test, synthetic_test, original_train, synthetic_train, **kwargs):
-    return discriminative_detection(original_test, synthetic_test, original_train, synthetic_train, clf=SVC(gamma='auto'), **kwargs)
+    return discriminative_detection(original_test, synthetic_test, original_train, synthetic_train, clf=SVC(gamma='auto', probability=True), **kwargs)
+
+
+def knn_detection(original_test, synthetic_test, original_train, synthetic_train, **kwargs):
+    return discriminative_detection(original_test, synthetic_test, original_train, synthetic_train, clf=KNeighborsClassifier(), **kwargs)
+
+
+def mlp_detection(original_test, synthetic_test, original_train, synthetic_train, **kwargs):
+    hidden_layer_sizes = kwargs.get('hidden_layer_sizes', (100, ))
+    return discriminative_detection(original_test, synthetic_test, original_train, synthetic_train, clf=MLPClassifier(hidden_layer_sizes=hidden_layer_sizes), **kwargs)
+
 
 def discriminative_detection(original_test, synthetic_test, original_train, synthetic_train, clf=LogisticRegression(solver='lbfgs'), **kwargs):
     metadata = kwargs.get('metadata', None)
