@@ -21,3 +21,8 @@
 * 24. (1h): Meeting with mentor Strumbelj Erik, further work outline
 * 26. (8h): K-fold splitting of biodegradability hierarchical data, start of SDV data generation
 * 27. (10h): data splitting fixes, SDV data generation, evaluation report, python package creation
+* 29. (3h): Meeting with mentor Strumbelj Erik, meeting between teammates for further work
+
+## May 2023 (16)
+* 3. (8h): Commercial tools for data generation: generating and research on google colab
+* 6. (8h): Finish data splitting, add discriminative detection models for evaluation
