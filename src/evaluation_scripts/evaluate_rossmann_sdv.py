@@ -1,7 +1,7 @@
 # %%
 from rike.evaluation.metrics import (ks_test, chisquare_test, mean_max_discrepency, 
                                      js_divergence, logistic_detection, random_forest_detection,
-                                     svm_detection, knn_detection, mlp_detection)
+                                     svm_detection, knn_detection, mlp_detection, xgboost_detection)
 from rike.evaluation.report import generate_report
 import json
 
@@ -12,11 +12,12 @@ METHOD_NAME = "sdv"
 # %%
 single_table_metrics = [
                         #ks_test,
-                        logistic_detection,
-                        random_forest_detection,
-                        svm_detection,
-                        knn_detection,
-                        mlp_detection,
+                        #logistic_detection,
+                        #random_forest_detection,
+                        #svm_detection,
+                        #knn_detection,
+                        xgboost_detection,
+                        #mlp_detection,
                         # chisquare_test,
                         # mean_max_discrepency,
                         # js_divergence,

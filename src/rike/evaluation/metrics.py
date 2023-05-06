@@ -13,6 +13,7 @@ from sdmetrics.utils import HyperTransformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
+import xgboost as xgb
 
 
 def get_frequency(
@@ -244,6 +245,10 @@ def knn_detection(original_test, synthetic_test, original_train, synthetic_train
 def mlp_detection(original_test, synthetic_test, original_train, synthetic_train, **kwargs):
     hidden_layer_sizes = kwargs.get('hidden_layer_sizes', (100, ))
     return discriminative_detection(original_test, synthetic_test, original_train, synthetic_train, clf=MLPClassifier(hidden_layer_sizes=hidden_layer_sizes), **kwargs)
+
+
+def xgboost_detection(original_test, synthetic_test, original_train, synthetic_train, **kwargs):
+    return discriminative_detection(original_test, synthetic_test, original_train, synthetic_train, clf = xgb.XGBClassifier(), **kwargs)
 
 
 def discriminative_detection(original_test, synthetic_test, original_train, synthetic_train, clf=LogisticRegression(solver='lbfgs'), **kwargs):
