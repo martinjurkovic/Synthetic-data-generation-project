@@ -5,8 +5,10 @@ from scipy.spatial.distance import jensenshannon
 from scipy.special import kl_div
 from scipy.stats import chisquare, ks_2samp
 from sklearn.metrics.pairwise import pairwise_distances
-from sdmetrics.single_table import LogisticDetection
 from sdmetrics.multi_table import CardinalityShapeSimilarity
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, log_loss
+from sdmetrics.utils import HyperTransformer
 
 def get_frequency(
     original: pd.DataFrame, synthetic: pd.DataFrame, nbins: int = 10
@@ -217,6 +219,40 @@ def cardinality_similarity(tables_original, tables_synthetic, metadata, **kwargs
     return similarities
 
 
-def logistic_detection(original, synthetic, **kwargs):
+def logistic_detection(original_test, synthetic_test, original_train, synthetic_train, **kwargs):
     metadata = kwargs.get('metadata', None)
-    return LogisticDetection.compute(original, synthetic, metadata)
+
+    if metadata is not None and 'primary_key' in metadata:
+        transformed_original_train = original_train.drop(metadata['primary_key'], axis=1)
+        transformed_synthetic_train = synthetic_train.drop(metadata['primary_key'], axis=1)
+        transformed_original_test = original_test.drop(metadata['primary_key'], axis=1)
+        transformed_synthetic_test = synthetic_test.drop(metadata['primary_key'], axis=1)
+    else:
+        transformed_original_train = original_train
+        transformed_synthetic_train = synthetic_train
+        transformed_original_test = original_test
+        transformed_synthetic_test = synthetic_test
+
+    ht = HyperTransformer()
+    transformed_original_train = ht.transform(transformed_original_train).to_numpy()
+    transformed_original_test = ht.transform(transformed_original_test).to_numpy()
+    transformed_synthetic_train = ht.transform(transformed_synthetic_train).to_numpy()
+    transformed_synthetic_test = ht.transform(transformed_synthetic_test).to_numpy()
+    
+    X_train = np.concatenate([transformed_original_train, transformed_synthetic_train])
+    X_test = np.concatenate([transformed_original_test, transformed_synthetic_test])
+    y_train = np.hstack([
+        np.ones(len(transformed_original_train)), np.zeros(len(transformed_synthetic_train))
+    ])
+    y_test = np.hstack([
+        np.ones(len(transformed_original_test)), np.zeros(len(transformed_synthetic_test))
+    ])
+
+    clf = LogisticRegression(solver='lbfgs').fit(X_train, y_train)
+    probs = clf.predict_proba(X_test)
+    y_pred = probs.argmax(axis=1)
+    #return log_loss(y_test, probs)
+    return accuracy_score(y_test, y_pred)
+
+
+

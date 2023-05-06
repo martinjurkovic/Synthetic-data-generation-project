@@ -31,13 +31,13 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
                 print(table, categorical[table][field])
 
     for k in range(10):
-        _, tables_orig_test = get_train_test_split(
+        tables_orig_train, tables_orig_test = get_train_test_split(
             dataset_name, test_fold_index=k, synthetic=False)
-        _, tables_synthetic_test = get_train_test_split(
+        tables_synthetic_train, tables_synthetic_test = get_train_test_split(
             dataset_name, test_fold_index=k, synthetic=True, method_name=method_name)
         
         for table, fields in categorical.items():
-            for field, values in categorical.items():
+            for field, values in fields.items():
                 tables_orig_test[table][field] = pd.Categorical(tables_orig_test[table][field], categories=values[field])
                 tables_synthetic_test[table][field] = pd.Categorical(tables_synthetic_test[table][field], categories=values[field])
         
@@ -55,8 +55,8 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
         for table_name in tables_orig_test.keys():
             for metric in single_table_metrics:
                 metric_name = metric.__name__
-                metric_value = metric(
-                    tables_orig_test[table_name], tables_synthetic_test[table_name], metadata = metadata.to_dict()['tables'][table_name])
+                metric_value = metric(tables_orig_test[table_name], tables_synthetic_test[table_name],
+                                      original_train=tables_orig_train[table_name], synthetic_train=tables_synthetic_train[table_name], metadata = metadata.to_dict()['tables'][table_name])
                 if table_name not in metrics_report["metrics"]["single_table"].keys():
                     metrics_report["metrics"]["single_table"][table_name] = {}
                 if metric_name not in metrics_report["metrics"]["single_table"][table_name]:
