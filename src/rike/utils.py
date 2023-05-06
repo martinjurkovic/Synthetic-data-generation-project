@@ -9,9 +9,7 @@ def read_tables(dataset_name, test_fold_index, type, synthetic, method_name=None
     cwd = os.getcwd()
     cwd_project = cwd.split(
         'Synthetic-data-generation-project')[0] + 'Synthetic-data-generation-project'
-    mid_path = ''
     if synthetic:
-        mid_path = '/data/synthetic/'
         path = cwd_project + '/data/synthetic/' + dataset_name + '/' + method_name + '/'
     else:
         path = cwd_project + '/data/splits/' + dataset_name + '/'

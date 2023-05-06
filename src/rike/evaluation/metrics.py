@@ -5,6 +5,8 @@ from scipy.spatial.distance import jensenshannon
 from scipy.special import kl_div
 from scipy.stats import chisquare, ks_2samp
 from sklearn.metrics.pairwise import pairwise_distances
+from sdmetrics.single_table import LogisticDetection
+from sdmetrics.multi_table import CardinalityShapeSimilarity
 
 def get_frequency(
     original: pd.DataFrame, synthetic: pd.DataFrame, nbins: int = 10
@@ -41,7 +43,7 @@ def get_frequency(
     return res
 
 
-def ks_test(original, synthetic):
+def ks_test(original, synthetic, **kwargs):
     """
     Calculate the Kolmogorov-Smirnov test.
     """
@@ -53,7 +55,7 @@ def ks_test(original, synthetic):
     return np.mean(res)
 
 
-def chisquare_test(original, synthetic, nbins=10):
+def chisquare_test(original, synthetic, nbins=10, **kwargs):
     """
     Calculate the Chi-Square test.
     """
@@ -75,7 +77,7 @@ def chisquare_test(original, synthetic, nbins=10):
     return np.mean(res)
 
 
-def js_divergence(original, synthetic, nbins=10, normalize=False):
+def js_divergence(original, synthetic, nbins=10, normalize=False, **kwargs):
     stats_gt = {}
     stats_syn = {}
     stats = {}
@@ -102,7 +104,7 @@ def js_divergence(original, synthetic, nbins=10, normalize=False):
     return sum(stats.values()) / len(stats.keys())
 
 
-def mean_max_discrepency(original, synthetic, kernel='linear', nbins=10):
+def mean_max_discrepency(original, synthetic, kernel='linear', nbins=10, **kwargs):
     if kernel == "linear":
         """
         MMD using linear kernel (i.e., k(x,y) = <x,y>)
@@ -167,32 +169,54 @@ def mean_max_discrepency(original, synthetic, kernel='linear', nbins=10):
     return score
             
 
-def ml_efficiency(train_original, train_synthetic, test, validation=None):
+def ml_efficiency(train_original, train_synthetic, test, validation=None, **kwargs):
     """
     Calculate the efficiency of the ML model.
     """
     pass
 
 
-def discriminative_measure(original, synthetic):
+def discriminative_measure(original, synthetic, **kwargs):
     """
     Calculate the discriminative measure using a ML model.
     """
     pass
 
-def distance_to_closest_record(original, synthetic):
+
+def distance_to_closest_record(original, synthetic, **kwargs):
     """
     Calculate the distance to the closest record.
     """
     distances = pairwise_distances(original, synthetic, metric='manhattan')
     return np.min(distances, axis=1)
 
-def nearest_neighbour_distance_ratio(original, synthetic):
+
+def nearest_neighbour_distance_ratio(original, synthetic, **kwargs):
     """
     Calculate the distance to the closest record.
     """
-    distances = pairwise_distances(original, synthetic, metric='manhattan')
+    distances = pairwise_distances(original, synthetic, metric='manhattan', **kwargs)
     distances = np.sort(distances, axis=1)
     nearest = distances[:, 0]
     second_nearest = distances[:, 1]
     return nearest / second_nearest
+
+# multi table metrics
+def cardinality_similarity(tables_original, tables_synthetic, metadata, **kwargs):
+    cardinality = CardinalityShapeSimilarity.compute_breakdown(tables_original, tables_synthetic, metadata)
+    similarities = {}
+    for table1, table2 in cardinality.keys():
+        if table1 not in similarities:
+            similarities[table1] = [cardinality[(table1, table2)]['score']]
+        else:
+            similarities[table1].append(cardinality[(table1, table2)]['score'])
+        if table2 not in similarities:
+            similarities[table2] = [cardinality[(table1, table2)]['score']]
+        else:
+            similarities[table2].append(cardinality[(table1, table2)]['score'])
+    return similarities
+
+
+def logistic_detection(original, synthetic, **kwargs):
+    metadata = kwargs.get('metadata', None)
+    return LogisticDetection.compute(original, synthetic, metadata)
