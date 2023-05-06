@@ -2,6 +2,7 @@ import os
 import json
 
 import numpy as np
+import pandas as pd
 
 from rike.generation import sdv_metadata
 from rike.utils import get_train_test_split, read_original_tables
@@ -19,14 +20,26 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
         }
     }
     # load metadata
-    tables_train = read_original_tables(dataset_name)
-    metadata = sdv_metadata.generate_metadata(dataset_name, tables_train)
+    tables_original = read_original_tables(dataset_name)
+    metadata = sdv_metadata.generate_metadata(dataset_name, tables_original)
+    categorical = {}
+    for table, fields in metadata.to_dict()['tables'].items():
+        categorical[table] = {}
+        for field, values in fields['fields'].items():
+            if values['type'] == 'id' and values['subtype'] == 'string':
+                categorical[table][field] = tables_original[table][field].unique()
+                print(table, categorical[table][field])
 
     for k in range(10):
         _, tables_orig_test = get_train_test_split(
             dataset_name, test_fold_index=k, synthetic=False)
         _, tables_synthetic_test = get_train_test_split(
             dataset_name, test_fold_index=k, synthetic=True, method_name=method_name)
+        
+        for table, fields in categorical.items():
+            for field, values in categorical.items():
+                tables_orig_test[table][field] = pd.Categorical(tables_orig_test[table][field], categories=values[field])
+                tables_synthetic_test[table][field] = pd.Categorical(tables_synthetic_test[table][field], categories=values[field])
         
         
         
