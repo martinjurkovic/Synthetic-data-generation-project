@@ -11,15 +11,21 @@ from rike.evaluation.metrics import ks_test, cardinality_similarity
 
 
 def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], multi_table_metrics = ['cardinality'], save_report=False):
-    metrics_report = {
-        "dataset_name": dataset_name,
-        "metrics": {
-            "single_table": {
-            },
-            "multi_table": {
-            },
+    # read metrics_report from file
+    if os.path.exists(f"metrics_report/{dataset_name}_{method_name}.json"):
+        with open(f"metrics_report/{dataset_name}_{method_name}.json", "r") as f:
+            metrics_report = json.load(f)
+    else:
+        metrics_report = {
+            "dataset_name": dataset_name,
+            "metrics": {
+                "single_table": {
+                },
+                "multi_table": {
+                },
+            }
         }
-    }
+
     # load metadata
     tables_original = read_original_tables(dataset_name)
     metadata = sdv_metadata.generate_metadata(dataset_name, tables_original)
