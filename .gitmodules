@@ -1,0 +1,3 @@
+[submodule "RCTGAN"]
+	path = RCTGAN
+	url = https://github.com/ValterH/RCTGAN
