@@ -127,22 +127,22 @@ def generate_biodegradability_metadata(dataset_name, original_data, save_metadat
         fields_metadata=bond_fields
     )
 
-    metadata.add_table(
-        name="gmember",
-        data=original_data["gmember"],
-        primary_key="gmember_id",
-        fields_metadata={
-            'atom_id': {
-                'type': 'categorical',
-            },
-        }
-    )
+    # metadata.add_table(
+    #     name="gmember",
+    #     data=original_data["gmember"],
+    #     primary_key="gmember_id",
+    #     fields_metadata={
+    #         'atom_id': {
+    #             'type': 'categorical',
+    #         },
+    #     }
+    # )
 
-    metadata.add_table(
-        name="group",
-        data=original_data["group"],
-        primary_key="group_id",
-    )
+    # metadata.add_table(
+    #     name="group",
+    #     data=original_data["group"],
+    #     primary_key="group_id",
+    # )
 
     metadata.add_relationship(
         parent="molecule",
@@ -161,17 +161,17 @@ def generate_biodegradability_metadata(dataset_name, original_data, save_metadat
         foreign_key="atom_id2",
     )
 
-    metadata.add_relationship(
-        parent="atom",
-        child="gmember",
-        foreign_key="atom_id",
-    )
+    # metadata.add_relationship(
+    #     parent="atom",
+    #     child="gmember",
+    #     foreign_key="atom_id",
+    # )
 
-    metadata.add_relationship(
-        parent="group",
-        child="gmember",
-        foreign_key="group_id",
-    )
+    # metadata.add_relationship(
+    #     parent="group",
+    #     child="gmember",
+    #     foreign_key="group_id",
+    # )
     if save_metadata:
         save_metadata(metadata, dataset_name)
     return metadata
