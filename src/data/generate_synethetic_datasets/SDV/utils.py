@@ -55,8 +55,11 @@ def save_metadata(metadata, dataset_name):
 
     metadata.to_json(f'{path}/{dataset_name}_metadata.json')
 
-def save_SDV_data(tables_synthetic, dataset_name, leave_out_fold_num):
-    path = CWD_PROJECT + '/data/synthetic/' + dataset_name + '/'
+def save_data(tables_synthetic, dataset_name, leave_out_fold_num, method='SDV'):
+    path = CWD_PROJECT + '/data/synthetic/' + dataset_name + '/' + method + '/'
+    # create directory if not exists
+    if not os.path.exists(path):
+        os.makedirs(path)
     for table_name, table in tables_synthetic.items():
         table.to_csv(
-            path + f'{dataset_name}_{table_name}-fold-{leave_out_fold_num}.csv', index=False)
+            path + f'{dataset_name}_{table_name}_fold_{leave_out_fold_num}.csv', index=False)

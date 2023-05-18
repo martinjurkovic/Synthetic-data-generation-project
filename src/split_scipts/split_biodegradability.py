@@ -4,6 +4,10 @@ import rike.split_utils as utils
 # READ DATA
 dataset_name = "biodegradability"
 original_data = utils.read_tables(dataset_name)
+# %%
+# ADD PRIMARY KEY TO DEPENDENT TABLES THAT DON'T HAVE ONE
+original_data['bond'] = utils.add_primary_key(original_data['bond'], 'bond_id')
+original_data['gmember'] = utils.add_primary_key(original_data['gmember'], 'gmember_id')
 
 # %%
 # SPLIT DATASET 10 FOLD

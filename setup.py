@@ -22,9 +22,9 @@ setup(
         "REaLTabFormer==0.1.1",
         "scikit-learn==1.2.2",
         "scipy==1.10.1",
-        "sdmetrics==0.9.2",
-        "sdv==0.18.0",
-        "tqdm==4.65.0",],
+        "sdmetrics>=0.4.1,<0.5",
+        "sdv",
+        "tqdm>=4.15,<5",],
     keywords=['python', 'RIKE', 'synthetic data', 'relational data', 'evaluation'],
     classifiers=[
         "Development Status :: 3 - Alpha",

@@ -84,3 +84,7 @@ def save_folds(table_folds, dataset_name, table_names):
         for j, test in enumerate(temp_folds):
             # train.to_csv(f'{path}/{dataset_name}_{table_names[i]}_fold_{j}_train.csv')
             test.to_csv(f'{path}/{dataset_name}_{table_names[i]}_fold_{j}.csv', index=False)
+
+def add_primary_key(table, name='id'):
+    table.insert(0, name, range(0, len(table)))
+    return table

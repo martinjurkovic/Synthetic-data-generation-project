@@ -1,3 +1,6 @@
+# Temporary files
+*.temp
+
 # Data
 data/*
 !data/README.md

@@ -50,8 +50,8 @@ def read_original_tables(dataset_name, split_by="-", name_index=-1, **kwargs):
     return tables
 
 
-def save_SDV_data(tables_synthetic, dataset_name, leave_out_fold_num):
-    path = CWD_PROJECT + '/data/synthetic/' + dataset_name + '/' + "SDV" + '/'
+def save_data(tables_synthetic, dataset_name, leave_out_fold_num, method='SDV'):
+    path = CWD_PROJECT + '/data/synthetic/' + dataset_name + '/' + method + '/'
     # create directory if not exists
     if not os.path.exists(path):
         os.makedirs(path)

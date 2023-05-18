@@ -77,6 +77,7 @@ def generate_biodegradability_metadata(dataset_name, original_data, save_metadat
     metadata.add_table(
         name="bond",
         data=original_data["bond"],
+        primary_key="bond_id",
         fields_metadata={
             'atom_id': {
                 'type': 'categorical',
@@ -90,6 +91,7 @@ def generate_biodegradability_metadata(dataset_name, original_data, save_metadat
     metadata.add_table(
         name="gmember",
         data=original_data["gmember"],
+        primary_key="gmember_id",
         fields_metadata={
             'atom_id': {
                 'type': 'categorical',

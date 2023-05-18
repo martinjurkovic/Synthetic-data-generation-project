@@ -16,7 +16,7 @@ for k in tqdm.tqdm(range(10)):
     model = HMA1(metadata=metadata)
     model.fit(tables_train)
     synthetic_data = model.sample(num_rows=tables_test[root_table_name].shape[0])
-    sdv_utils.save_SDV_data(synthetic_data, DATASET_NAME, k)
+    sdv_utils.save_data(synthetic_data, DATASET_NAME, k, method='SDV')
 
 # %%
 # tables_train, tables_test = sdv_utils.get_train_test_split(DATASET_NAME, 0)
