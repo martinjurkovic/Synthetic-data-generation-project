@@ -16,11 +16,11 @@ for k in tqdm.tqdm(range(10)):
     tables_train, tables_test = sdv_utils.get_train_test_split(DATASET_NAME, k)
     metadata = sdv_metadata.generate_metadata(DATASET_NAME, tables_train)
     # Create HMA1 model
-    model = RCTGAN()
+    model = RCTGAN(metadata)
     # # ignores warnings being raised inside the RCTGAN package
     # with pd.option_context('mode.chained_assignment', None):
-    model.fit(metadata, tables=tables_train)
-    synthetic_data = model.sample(num_rows=tables_test["molecule"].shape[0])
+    model.fit(tables_train)
+    pickle.dump(model, open(f'models/model_rctgan{DATASET_NAME}_fold_{k}.pickle', "wb" ) )
+    synthetic_data = model.sample()
     sdv_utils.save_data(synthetic_data, DATASET_NAME, k, method='RCTGAN')
-    pickle.dump(model, open(f'models/model_rctgan{DATASET_NAME}_fold_{k}.p', "wb" ) )
 # %%
