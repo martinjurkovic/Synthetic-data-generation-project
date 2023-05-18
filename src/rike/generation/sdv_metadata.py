@@ -52,40 +52,79 @@ def generate_rossman_metadata(dataset_name, original_data, save_metadata=False):
 
 def generate_biodegradability_metadata(dataset_name, original_data, save_metadata=False):
     metadata = Metadata()
+
+    # Specification of fields propreties
+    atom_fields = {
+        'atom_id': {
+            'type': 'id',
+            'subtype': 'string'
+        },
+        'molecule_id': {
+            'type': 'id',
+            'subtype': 'string'
+        },
+        'type': {
+            'type': 'categorical'
+        }   
+    }
+
+    bond_fields = {
+        'bond_id': {
+            'type': 'id',
+            'subtype': 'string'
+        },
+        'atom_id': {
+            'type': 'id',
+            'subtype': 'string'
+        },
+        'atom_id2': {
+            'type': 'id',
+            'subtype': 'string'
+        },
+        'type': {
+            'type': 'categorical'
+        }
+    }
+
+    molecule_fields = {
+        'molecule_id': {
+            'type': 'id',
+            'subtype': 'string'
+        },
+        'activity': {
+            'type': 'numerical',
+            'subtype': 'float'
+        },
+        'logp': {
+            'type': 'numerical',
+            'subtype': 'float'
+        },
+        'mweight': {
+            'type': 'numerical',
+            'subtype': 'float'
+        },
+        
+    }
+
     metadata.add_table(
         name="molecule",
         data=original_data["molecule"],
         primary_key="molecule_id",
-        fields_metadata={
-            'molecule_id': {
-                'type': 'categorical',
-            },
-        }
+        fields_metadata= molecule_fields
     )
 
     metadata.add_table(
         name="atom",
         data=original_data["atom"],
         primary_key="atom_id",
-        fields_metadata={
-            'atom_id': {
-                'type': 'categorical',
-            },
-        }
+        fields_metadata=atom_fields
     )
 
     metadata.add_table(
         name="bond",
         data=original_data["bond"],
         primary_key="bond_id",
-        fields_metadata={
-            'atom_id': {
-                'type': 'categorical',
-            },
-            'atom_id2': {
-                'type': 'categorical',
-            },
-        }
+        fields_metadata=bond_fields
     )
 
     metadata.add_table(
