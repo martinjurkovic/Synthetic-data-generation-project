@@ -12,10 +12,12 @@ from rctgan import RCTGAN
 # %%
 
 args = argparse.ArgumentParser()
-args.add_argument("--dataset-name", type=str, default="rossmann-store-sales")
+args.add_argument("--dataset-name", type=str, default="biodegradability")
+args.add_argument("--root-table-name", type=str, default="molecule")
 args = args.parse_args()
 
 dataset_name = args.dataset_name
+root_table_name = args.root_table_name
 
 CWD_PROJECT = os.getcwd().split(
     'Synthetic-data-generation-project')[0] + 'Synthetic-data-generation-project'
@@ -40,7 +42,7 @@ for k in tqdm.tqdm(range(10)):
         # ignores warnings being raised inside the RCTGAN package
         with pd.option_context('mode.chained_assignment', None):
             model.fit(tables_train)
-        pickle.dump(model, open(f'models/model_rctgan{dataset_name}_fold_{k}.pickle', "wb" ) )
-    synthetic_data = model.sample()
+        pickle.dump(model, open(f'models/model_rctgan_{dataset_name}_fold_{k}.pickle', "wb" ) )
+    synthetic_data = model.sample(num_rows=tables_test[root_table_name].shape[0])
     generation_utils.save_data(synthetic_data, dataset_name, k, method='RCTGAN')
 # %%
