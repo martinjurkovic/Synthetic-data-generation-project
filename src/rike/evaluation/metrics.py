@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import pandas as pd
 from sklearn import metrics
@@ -252,35 +254,58 @@ def xgboost_detection(original_test, synthetic_test, original_train, synthetic_t
 
 
 def discriminative_detection(original_test, synthetic_test, original_train, synthetic_train, clf=LogisticRegression(solver='lbfgs'), **kwargs):
+    save_path = kwargs.get('save_path', None)
     metadata = kwargs.get('metadata', None)
-
+    synthetic_ids = synthetic_test.pop(metadata['primary_key'])
+    transformed_original_train = original_train
+    transformed_synthetic_train = synthetic_train
+    transformed_original_test = original_test
+    transformed_synthetic_test = synthetic_test
     if metadata is not None and 'primary_key' in metadata:
-        transformed_original_train = original_train.drop(metadata['primary_key'], axis=1)
-        transformed_synthetic_train = synthetic_train.drop(metadata['primary_key'], axis=1)
-        transformed_original_test = original_test.drop(metadata['primary_key'], axis=1)
-        transformed_synthetic_test = synthetic_test.drop(metadata['primary_key'], axis=1)
-    else:
-        transformed_original_train = original_train
-        transformed_synthetic_train = synthetic_train
-        transformed_original_test = original_test
-        transformed_synthetic_test = synthetic_test
+        transformed_original_train = transformed_original_train.drop(metadata['primary_key'], axis=1)
+        transformed_synthetic_train = transformed_synthetic_train.drop(metadata['primary_key'], axis=1)
+        transformed_original_test = transformed_original_test.drop(metadata['primary_key'], axis=1)
+        transformed_synthetic_test = transformed_synthetic_test.copy()
+        #transformed_synthetic_test = synthetic_test.drop(metadata['primary_key'], axis=1)
+    
 
     ht = HyperTransformer()
-    transformed_original_train = ht.fit_transform(transformed_original_train).to_numpy()
+    transformed_original_train = ht.fit_transform(transformed_original_train)
+    columns = transformed_original_train.columns
+    transformed_original_train = transformed_original_train.to_numpy()
     transformed_original_test = ht.transform(transformed_original_test).to_numpy()
     transformed_synthetic_train = ht.transform(transformed_synthetic_train).to_numpy()
     transformed_synthetic_test = ht.transform(transformed_synthetic_test).to_numpy()
     
     X_train = np.concatenate([transformed_original_train, transformed_synthetic_train])
-    X_test = np.concatenate([transformed_original_test, transformed_synthetic_test])
+    X_test = transformed_synthetic_test #np.concatenate([transformed_original_test, transformed_synthetic_test])
     y_train = np.hstack([
         np.ones(len(transformed_original_train)), np.zeros(len(transformed_synthetic_train))
     ])
-    y_test = np.hstack([
-        np.ones(len(transformed_original_test)), np.zeros(len(transformed_synthetic_test))
-    ])
+    y_test = np.zeros(len(transformed_synthetic_test))
+    # np.hstack([
+    #     np.ones(len(transformed_original_test)), np.zeros(len(transformed_synthetic_test))
+    # ])
 
     clf = clf.fit(X_train, y_train)
     probs = clf.predict_proba(X_test)
     y_pred = probs.argmax(axis=1)
+    if save_path is not None:
+        # save probabilities
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        df = pd.DataFrame({
+            'id': synthetic_ids,
+            'probs': probs[:, 0],
+        })
+        df.to_csv(save_path, index=False)
+
+        # save feature importance
+        feature_importance_path = save_path.replace('probabilities', 'feature_importance')
+        os.makedirs(os.path.dirname(feature_importance_path), exist_ok=True)
+        df = pd.DataFrame({
+            'feature': columns,
+            'importance': clf.feature_importances_
+        })
+        df.sort_values(by='importance', ascending=False, inplace=True)
+        df.to_csv(feature_importance_path, index=False)
     return accuracy_score(y_test, y_pred)

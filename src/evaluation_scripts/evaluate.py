@@ -1,12 +1,18 @@
 # %%
+import json
+import argparse
+
 from rike.evaluation.metrics import (ks_test, chisquare_test, mean_max_discrepency, 
                                      js_divergence, logistic_detection, random_forest_detection,
                                      svm_detection, knn_detection, mlp_detection, xgboost_detection)
 from rike.evaluation.report import generate_report
-import json
 
-DATASET_NAME = "rossmann-store-sales"
-METHOD_NAME = "sdv"
+
+
+args = argparse.ArgumentParser()
+args.add_argument("--dataset_name", type=str, default="rossmann-store-sales")
+args.add_argument("--method_name", type=str, default="sdv")
+args, unknown = args.parse_known_args()
 
 
 # %%
@@ -24,7 +30,7 @@ single_table_metrics = [
                         ]
 
 # %%
-report = generate_report(DATASET_NAME, METHOD_NAME,
+report = generate_report(args.dataset_name, args.method_name,
                          single_table_metrics=single_table_metrics, save_report=True)
 # print formatted report dict
 print(json.dumps(report, indent=4))

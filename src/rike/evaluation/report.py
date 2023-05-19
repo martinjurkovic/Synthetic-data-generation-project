@@ -57,6 +57,19 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
                             tables_synthetic_test,
                             metadata)
             
+        # convert the datetime columns to datetime type
+        for table, fields in metadata.to_dict()['tables'].items():
+            for field, values in fields['fields'].items():
+                if values['type'] == 'datetime':
+                    tables_orig_test[table][field] = pd.to_datetime(tables_orig_test[table][field], format=values['format'])
+                    tables_synthetic_test[table][field] = pd.to_datetime(tables_synthetic_test[table][field], format=values['format'])
+                    tables_orig_train[table][field] = pd.to_datetime(tables_orig_train[table][field], format=values['format'])
+                    tables_synthetic_train[table][field] = pd.to_datetime(tables_synthetic_train[table][field], format=values['format'])
+                if 'ref' in values.keys():
+                    tables_orig_test[table].drop(columns=[field], inplace=True)
+                    tables_synthetic_test[table].drop(columns=[field], inplace=True)
+                    tables_orig_train[table].drop(columns=[field], inplace=True)
+                    tables_synthetic_train[table].drop(columns=[field], inplace=True)
 
 
         # Single table metrics
@@ -64,7 +77,10 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
             for metric in single_table_metrics:
                 metric_name = metric.__name__
                 metric_value = metric(tables_orig_test[table_name], tables_synthetic_test[table_name],
-                                      original_train=tables_orig_train[table_name], synthetic_train=tables_synthetic_train[table_name], metadata = metadata.to_dict()['tables'][table_name])
+                                      original_train=tables_orig_train[table_name], 
+                                      synthetic_train=tables_synthetic_train[table_name], 
+                                      metadata = metadata.to_dict()['tables'][table_name],
+                                      save_path=f"metrics_report/{dataset_name}/{method_name}/{metric_name}/probabilities/{table_name}_{k}.csv")
                 if table_name not in metrics_report["metrics"]["single_table"].keys():
                     metrics_report["metrics"]["single_table"][table_name] = {}
                 if metric_name not in metrics_report["metrics"]["single_table"][table_name] or k == 0:
@@ -78,7 +94,7 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
                         "scores": []}
                 for score in cardinality[table_name]:
                     metrics_report["metrics"]["single_table"][table_name]['cardinality']["scores"].append(score)
-                
+                         
         # Multi table metrics
 
     for table_name in metrics_report["metrics"]["single_table"].keys():
