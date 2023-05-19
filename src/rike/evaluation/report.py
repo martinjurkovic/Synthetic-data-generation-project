@@ -57,20 +57,26 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
                             tables_synthetic_test,
                             metadata)
             
-        # convert the datetime columns to datetime type
         for table, fields in metadata.to_dict()['tables'].items():
             for field, values in fields['fields'].items():
+                # convert the datetime columns to datetime type
                 if values['type'] == 'datetime':
                     tables_orig_test[table][field] = pd.to_datetime(tables_orig_test[table][field], format=values['format'])
                     tables_synthetic_test[table][field] = pd.to_datetime(tables_synthetic_test[table][field], format=values['format'])
                     tables_orig_train[table][field] = pd.to_datetime(tables_orig_train[table][field], format=values['format'])
                     tables_synthetic_train[table][field] = pd.to_datetime(tables_synthetic_train[table][field], format=values['format'])
+                # remove the foreign key columns
                 if 'ref' in values.keys():
                     tables_orig_test[table].drop(columns=[field], inplace=True)
                     tables_synthetic_test[table].drop(columns=[field], inplace=True)
                     tables_orig_train[table].drop(columns=[field], inplace=True)
                     tables_synthetic_train[table].drop(columns=[field], inplace=True)
-
+            # sort the columns of all tables
+            column_order = tables_orig_test[table].columns
+            tables_orig_train = tables_orig_train.reindex(columns=column_order)
+            tables_orig_test = tables_orig_test.reindex(columns=column_order)
+            tables_synthetic_train = tables_synthetic_train.reindex(columns=column_order)
+            tables_synthetic_test = tables_synthetic_test.reindex(columns=column_order)
 
         # Single table metrics
         for table_name in tables_orig_test.keys():
