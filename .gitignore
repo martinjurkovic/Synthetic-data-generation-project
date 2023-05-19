@@ -10,6 +10,11 @@ models/*
 
 reports/*.pkl
 
+src/generation_scripts/*be1f3
+
+# VS CODE
+.vscode
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
