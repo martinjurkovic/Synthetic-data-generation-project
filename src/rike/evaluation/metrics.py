@@ -257,6 +257,7 @@ def discriminative_detection(original_test, synthetic_test, original_train, synt
     save_path = kwargs.get('save_path', None)
     metadata = kwargs.get('metadata', None)
     synthetic_ids = synthetic_test.pop(metadata['primary_key'])
+    original_ids =  original_test.pop(metadata['primary_key'])
     transformed_original_train = original_train
     transformed_synthetic_train = synthetic_train
     transformed_original_test = original_test
@@ -264,9 +265,8 @@ def discriminative_detection(original_test, synthetic_test, original_train, synt
     if metadata is not None and 'primary_key' in metadata:
         transformed_original_train = transformed_original_train.drop(metadata['primary_key'], axis=1)
         transformed_synthetic_train = transformed_synthetic_train.drop(metadata['primary_key'], axis=1)
-        transformed_original_test = transformed_original_test.drop(metadata['primary_key'], axis=1)
-        transformed_synthetic_test = transformed_synthetic_test.copy()
         #transformed_synthetic_test = synthetic_test.drop(metadata['primary_key'], axis=1)
+        #transformed_original_test = transformed_original_test.drop(metadata['primary_key'], axis=1)
     
 
     ht = HyperTransformer()
@@ -278,14 +278,15 @@ def discriminative_detection(original_test, synthetic_test, original_train, synt
     transformed_synthetic_test = ht.transform(transformed_synthetic_test).to_numpy()
     
     X_train = np.concatenate([transformed_original_train, transformed_synthetic_train])
-    X_test = transformed_synthetic_test #np.concatenate([transformed_original_test, transformed_synthetic_test])
+    # X_test = transformed_synthetic_test 
+    X_test = np.concatenate([transformed_original_test, transformed_synthetic_test])
     y_train = np.hstack([
         np.ones(len(transformed_original_train)), np.zeros(len(transformed_synthetic_train))
     ])
-    y_test = np.zeros(len(transformed_synthetic_test))
-    # np.hstack([
-    #     np.ones(len(transformed_original_test)), np.zeros(len(transformed_synthetic_test))
-    # ])
+    # y_test = np.zeros(len(transformed_synthetic_test))
+    y_test = np.hstack([
+        np.ones(len(transformed_original_test)), np.zeros(len(transformed_synthetic_test))
+    ])
 
     clf = clf.fit(X_train, y_train)
     probs = clf.predict_proba(X_test)
@@ -294,8 +295,10 @@ def discriminative_detection(original_test, synthetic_test, original_train, synt
         # save probabilities
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         df = pd.DataFrame({
-            'id': synthetic_ids,
-            'probs': probs[:, 0],
+            'id': np.hstack([original_ids, synthetic_ids]),
+            'prob_is_fake': probs[:, 1],
+            'y_pred': y_pred,
+            'y_true': y_test
         })
         df.to_csv(save_path, index=False)
 

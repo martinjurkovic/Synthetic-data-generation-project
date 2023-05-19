@@ -17,6 +17,7 @@ parent_model = REaLTabFormer(
     parent_realtabformer_path=parent_model_path,
 )
 parent_model = parent_model.load_from_dir(parent_model_path)
+parent_model.fit(parent_df.drop(join_on, axis=1))
 parent_samples = parent_model.sample(len(parent_df))
 
 parent_samples.to_csv(f'data/synthetic/rossmann-store-sales/REaLTabFormer/rossmann_store_fold_0.csv', index=False) # TODO: fix this path

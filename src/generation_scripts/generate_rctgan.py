@@ -34,13 +34,13 @@ for k in tqdm.tqdm(range(10)):
             generated = True
             break
     if generated:
-        continue
-
-    model = RCTGAN(metadata)
-    # ignores warnings being raised inside the RCTGAN package
-    with pd.option_context('mode.chained_assignment', None):
-        model.fit(tables_train)
-    pickle.dump(model, open(f'models/model_rctgan{dataset_name}_fold_{k}.pickle', "wb" ) )
+        model = pickle.load(open(f'models/model_rctgan{dataset_name}_fold_{k}.pickle', "rb" ) )
+    else:
+        model = RCTGAN(metadata)
+        # ignores warnings being raised inside the RCTGAN package
+        with pd.option_context('mode.chained_assignment', None):
+            model.fit(tables_train)
+        pickle.dump(model, open(f'models/model_rctgan{dataset_name}_fold_{k}.pickle', "wb" ) )
     synthetic_data = model.sample()
     generation_utils.save_data(synthetic_data, dataset_name, k, method='RCTGAN')
 # %%

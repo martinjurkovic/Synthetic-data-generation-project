@@ -73,10 +73,10 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
                     tables_synthetic_train[table].drop(columns=[field], inplace=True)
             # sort the columns of all tables
             column_order = tables_orig_test[table].columns
-            tables_orig_train = tables_orig_train.reindex(columns=column_order)
-            tables_orig_test = tables_orig_test.reindex(columns=column_order)
-            tables_synthetic_train = tables_synthetic_train.reindex(columns=column_order)
-            tables_synthetic_test = tables_synthetic_test.reindex(columns=column_order)
+            tables_orig_train[table] = tables_orig_train[table].reindex(column_order, axis=1)
+            tables_synthetic_test[table] = tables_synthetic_test[table].reindex(column_order, axis=1)
+            tables_synthetic_train[table] = tables_synthetic_train[table].reindex(column_order, axis=1)
+
 
         # Single table metrics
         for table_name in tables_orig_test.keys():
