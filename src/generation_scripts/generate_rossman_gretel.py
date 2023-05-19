@@ -90,10 +90,9 @@ for k in tqdm(range(10)):
 
     synthetic_data = multitable.synthetic_output_tables
     generation_utils.save_data(synthetic_data, DATASET_NAME, k, method=METHOD_NAME)
-    break
 
 # %%
-METHOD_NAME='gretel'
-synthetic_data = multitable.synthetic_output_tables
-generation_utils.save_data(synthetic_data, DATASET_NAME, k, method=METHOD_NAME)
+# METHOD_NAME='gretel'
+# synthetic_data = multitable.synthetic_output_tables
+# generation_utils.save_data(synthetic_data, DATASET_NAME, k, method=METHOD_NAME)
 # %%

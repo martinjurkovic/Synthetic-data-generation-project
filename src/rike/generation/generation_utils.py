@@ -61,7 +61,7 @@ def read_original_tables(dataset_name, split_by="-", name_index=-1, **kwargs):
     return tables
 
 def ends_with_digit(string):
-    pattern = r"_\d$"
+    pattern = r"_train_\d$"
     return bool(re.search(pattern, string))
 
 def save_data(tables_synthetic, dataset_name, leave_out_fold_num, method='SDV'):
@@ -71,6 +71,6 @@ def save_data(tables_synthetic, dataset_name, leave_out_fold_num, method='SDV'):
         os.makedirs(path)
     for table_name, table in tables_synthetic.items():
         if ends_with_digit(table_name):
-            table_name = table_name[:-2]
+            table_name = table_name[:-8]
         table.to_csv(
             path + f'{dataset_name}_{table_name}_fold_{leave_out_fold_num}.csv', index=False)
