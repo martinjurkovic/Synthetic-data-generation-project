@@ -14,7 +14,14 @@ def read_tables(dataset_name, leave_out_fold_num, type, split_by="_", name_index
     tables = {}
     for file in os.listdir(path):
         if file.endswith(".csv"):
-            table_name = file[:-4].split(split_by)[name_index]
+            table_split = file[:-4].split(split_by)
+            table_name = table_split[name_index]
+            for i in range(name_index + 1, len(table_split)):
+                if table_split[i] not in ("fold"):
+                    table_name += "_" + table_split[i]
+                else:
+                    break
+
             fold = file[:-4].split(split_by)[-1]
             if fold == str(leave_out_fold_num) and type == "test":
                 table = pd.read_csv(

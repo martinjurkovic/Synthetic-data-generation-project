@@ -7,6 +7,12 @@ def generate_metadata(dataset_name, original_data, save_metadata=False):
         return generate_biodegradability_metadata(dataset_name, original_data, save_metadata)
     if dataset_name == "rossmann-store-sales":
         return generate_rossman_metadata(dataset_name, original_data, save_metadata)
+    if dataset_name == "mutagenesis":
+        return generate_mutagenesis_metadata(dataset_name, original_data, save_metadata)
+    if dataset_name == "coupon-purchase-prediction":
+        return generate_coupon_metadata(dataset_name, original_data, save_metadata)
+    if dataset_name == "telstra-competition-dataset":
+        return generate_telstra_metadata(dataset_name, original_data, save_metadata)
     raise ValueError(f"Dataset {dataset_name} not supported")
 
 
@@ -100,7 +106,7 @@ def generate_mutagenesis_metadata(dataset_name, original_data, save_metadata=Fal
         },
         'ind1': {
             'type': 'numerical',
-            'subtype': 'int',
+            'subtype': 'integer',
         },
         'inda': {
             'type': 'numerical',
@@ -439,7 +445,7 @@ def generate_coupon_metadata(dataset_name, original_data, save_metadata=False):
         },
         'REG_DATE': {
             'type': 'datetime',
-            'subtype': 'string',
+            'format': '%Y-%m-%d',
         },
         'SEX_ID': {
             'type': 'categorical',
@@ -450,7 +456,7 @@ def generate_coupon_metadata(dataset_name, original_data, save_metadata=False):
         },
         'WITHDRAW_DATE': {
             'type': 'datetime',
-            'subtype': 'string',
+            'format': '%Y-%m-%d',
         },
         'PREF_NAME': {
             'type': 'categorical',
@@ -471,11 +477,10 @@ def generate_coupon_metadata(dataset_name, original_data, save_metadata=False):
         },
         'I_DATE': {
             'type': 'datetime',
-            'subtype': 'string',
+            'format': '%Y-%m-%d',
         },
         'PAGE_SERIAL': {
             'type': 'categorical',
-            'subtype': 'string',
         },
         'REFERRER_hash': {
             'type': 'id',
@@ -506,7 +511,7 @@ def generate_coupon_metadata(dataset_name, original_data, save_metadata=False):
         },
         'I_DATE': {
             'type': 'datetime',
-            'subtype': 'string',
+            'format': '%Y-%m-%d',
         },
         'SMALL_AREA_NAME': {
             'type': 'categorical',
