@@ -6,6 +6,10 @@ dataset_name = "mutagenesis"
 original_data = utils.read_tables(dataset_name)
 
 # %%
+# ADD PRIMARY KEY TO DEPENDENT TABLES THAT DON'T HAVE ONE
+original_data['bond'] = utils.add_primary_key(original_data['bond'], 'bond_id')
+
+# %%
 # SPLIT DATASET 10 FOLD
 
 molecule_folds = utils.split_k_fold(original_data["molecule"])

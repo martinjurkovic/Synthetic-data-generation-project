@@ -88,3 +88,10 @@ def save_folds(table_folds, dataset_name, table_names):
 def add_primary_key(table, name='id'):
     table.insert(0, name, range(0, len(table)))
     return table
+
+def merge_folds_for_train(table_folds):
+    train = pd.DataFrame()
+    for i, temp_folds in enumerate(table_folds):
+        for j, temp_fold in enumerate(temp_folds):
+            train = train.append(temp_fold)
+    return train
