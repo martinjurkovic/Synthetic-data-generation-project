@@ -15,7 +15,7 @@ for k in tqdm.tqdm(range(10)):
     
 
 # %%
-# tables_train, tables_test = sdv_utils.get_train_test_split(DATASET_NAME, 0)
+# tables_train, tables_test = generation_utils.get_train_test_split(DATASET_NAME, 0)
 # metadata = sdv_metadata.generate_metadata(DATASET_NAME, tables_train)
 # metadata.visualize()
 # %%
