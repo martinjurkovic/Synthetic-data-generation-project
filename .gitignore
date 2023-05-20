@@ -12,6 +12,9 @@ reports/*.pkl
 
 src/generation_scripts/mar*
 
+logs
+rtf_checkpoints
+
 # VS CODE
 .vscode
 

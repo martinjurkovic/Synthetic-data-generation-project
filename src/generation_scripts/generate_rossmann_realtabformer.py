@@ -6,18 +6,20 @@ import pandas as pd
 from rike import utils
 from rike.generation import sdv_metadata
 from realtabformer import REaLTabFormer
+from rike import logging_config
 
+logger = logging_config.logger
 
 # # OLD 
 # parent_df = pd.read_csv("/content/drive/MyDrive/MAG-1/DS-Project/colab/Rossman_data/source/store.csv")
-# child_df = pd.read_csv("/content/drive/MyDrive/MAG-1/DS-Project/colab/Rossman_data/source/sales.csv")
+# child_df = pd.read_csv("/content/drive/MyDrive/MAG-1/DS-Project/colab/Rossman_data/source/test.csv")
 
 # join_on = "Store"
 # assert ((join_on in parent_df.columns) and
 #         (join_on in child_df.columns))
 
 # parent_model = REaLTabFormer(model_type="tabular")
-# parent_model_path = 'models/realtabformer_rossmann_store_sales' # TODO: fix this path
+# parent_model_path = 'models/realtabformer_rossmann_store_test' # TODO: fix this path
 
 # parent_model = REaLTabFormer(
 #     model_type="tabular",
@@ -27,7 +29,7 @@ from realtabformer import REaLTabFormer
 # parent_model.fit(parent_df.drop(join_on, axis=1))
 # parent_samples = parent_model.sample(len(parent_df))
 
-# parent_samples.to_csv(f'data/synthetic/rossmann-store-sales/REaLTabFormer/rossmann_store_fold_0.csv', index=False) # TODO: fix this path
+# parent_samples.to_csv(f'data/synthetic/rossmann-store-test/REaLTabFormer/rossmann_store_fold_0.csv', index=False) # TODO: fix this path
 
 # child_model = REaLTabFormer(
 #     model_type="relational",
@@ -42,18 +44,25 @@ from realtabformer import REaLTabFormer
 #     in_df=parent_df,
 #     join_on=join_on)
 
+logger.error("START...")
+logger.info("START INFO...")
+
 dataset_name = 'rossmann-store-sales'
 root_table_name = 'store'
 
 # GENERATE SYNTHETIC DATA
 for k in tqdm.tqdm(range(10)):
+    logger.error("Generating synthetic data for %s, fold %d", dataset_name, k)
     tables_train, tables_test = utils.get_train_test_split(dataset_name, k)
     metadata = sdv_metadata.generate_metadata(dataset_name, tables_train)
     # select parent and child tables
     parent_df = tables_train[root_table_name]
-    child_df = tables_train['sales']
+    child_df = tables_train['test']
+    logger.error(parent_df.head())
+    logger.error(child_df.head())
     # check if join key is in both tables
-    join_on = metadata.to_dict()['tables']['sales']['foreign_key']
+    # join_on = metadata.to_dict()['tables']['test']['Store']
+    join_on = "Store"
     assert ((join_on in parent_df.columns) and
             (join_on in child_df.columns))
 
@@ -61,7 +70,7 @@ for k in tqdm.tqdm(range(10)):
     parent_model = REaLTabFormer(model_type="tabular")
     parent_model_path = f'models/realtabformer/rossmann_store_sales/checkpoint_{root_table_name}_{k}' 
     # fit and save parent model
-    parent_model.fit(parent_df.drop(join_on, axis=1))
+    parent_model.fit(parent_df.drop(join_on, axis=1), num_bootstrap=499)
     parent_model.save(parent_model_path)
     # load trained parent model
     parent_model = REaLTabFormer(
@@ -90,12 +99,12 @@ for k in tqdm.tqdm(range(10)):
         input_df=parent_samples.drop(join_on, axis=1),
         gen_batch=64)
     # save child model
-    child_model_path = f'models/realtabformer/rossmann_store_sales/checkpoint_sales_{k}'
+    child_model_path = f'models/realtabformer/rossmann_store_sales/checkpoint_test_{k}'
     child_model.save(child_model_path)
 
     # save synthetic data
     synthetic_data = {
         root_table_name: parent_samples,
-        'sales': child_samples
+        'test': child_samples
     }
     utils.save_data(dataset_name, synthetic_data, k, method='REaLTabFormer')
