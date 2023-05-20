@@ -7,6 +7,16 @@ from rike import utils
 from rike.generation import sdv_metadata
 from realtabformer import REaLTabFormer
 from rike import logging_config
+import glob
+import wandb
+
+os.environ["WANDB_PROJECT"]="REALTABFORMER_ROSSMANN"
+
+# save your trained model checkpoint to wandb
+os.environ["WANDB_LOG_MODEL"]="true"
+
+# turn off watch to log faster
+os.environ["WANDB_WATCH"]="false"
 
 logger = logging_config.logger
 
@@ -70,9 +80,12 @@ for k in tqdm.tqdm(range(10)):
     parent_model = REaLTabFormer(model_type="tabular")
     parent_model_path = f'models/realtabformer/rossmann_store_sales/checkpoint_{root_table_name}_{k}' 
     # fit and save parent model
-    parent_model.fit(parent_df.drop(join_on, axis=1), num_bootstrap=499)
+    parent_model.fit(parent_df.drop(join_on, axis=1), full_sensitivity=True)
     parent_model.save(parent_model_path)
     # load trained parent model
+    directories = list(filter(os.path.isdir, glob.glob(f"{parent_model_path}/id*")))
+    directories.sort(key=lambda x: os.path.getmtime(x))
+    parent_model_path = directories[-1]
     parent_model = REaLTabFormer(
         model_type="tabular",
         parent_realtabformer_path=parent_model_path,
