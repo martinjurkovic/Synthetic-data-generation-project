@@ -13,11 +13,11 @@ from rctgan import RCTGAN
 
 args = argparse.ArgumentParser()
 args.add_argument("--dataset-name", type=str, default="biodegradability")
-args.add_argument("--root-table-name", type=str, default="molecule")
+args.add_argument("--root-table", type=str, default="molecule")
 args = args.parse_args()
 
 dataset_name = args.dataset_name
-root_table_name = args.root_table_name
+root_table_name = args.root_table
 
 CWD_PROJECT = os.getcwd().split(
     'Synthetic-data-generation-project')[0] + 'Synthetic-data-generation-project'
@@ -27,7 +27,9 @@ base_path = CWD_PROJECT + '/data/synthetic/' + dataset_name + '/RCTGAN/'
 for k in tqdm.tqdm(range(10)):
     tables_train, tables_test = utils.get_train_test_split(dataset_name, k)
     metadata = sdv_metadata.generate_metadata(dataset_name, tables_train)
-    
+
+    assert root_table_name in metadata.to_dict()['tables'].keys(), \
+        f'Root table {root_table_name} not in metadata tables'
     # check if data already exists
     generated = False
     for table_name in metadata.to_dict()['tables'].keys():
@@ -36,7 +38,7 @@ for k in tqdm.tqdm(range(10)):
             generated = True
             break
     if generated:
-        model = pickle.load(open(f'models/model_rctgan{dataset_name}_fold_{k}.pickle', "rb" ) )
+        model = pickle.load(open(f'models/model_rctgan_{dataset_name}_fold_{k}.pickle', "rb" ) )
     else:
         model = RCTGAN(metadata)
         # ignores warnings being raised inside the RCTGAN package
