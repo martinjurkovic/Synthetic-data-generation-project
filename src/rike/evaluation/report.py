@@ -10,7 +10,7 @@ from rike.utils import get_train_test_split, read_original_tables
 from rike.evaluation.metrics import ks_test, cardinality_similarity
 
 
-def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], multi_table_metrics = ['cardinality'], save_report=False):
+def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], multi_table_metrics = ['cardinality'], save_report=False, limit=10):
     # read metrics_report from file
     if os.path.exists(f"metrics_report/{dataset_name}_{method_name}.json"):
         with open(f"metrics_report/{dataset_name}_{method_name}.json", "r") as f:
@@ -27,7 +27,7 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
         }
 
     # load metadata
-    tables_original = read_original_tables(dataset_name)
+    tables_original = read_original_tables(dataset_name, limit=limit)
     metadata = sdv_metadata.generate_metadata(dataset_name, tables_original)
     # categorical = {}
     # for table, fields in metadata.to_dict()['tables'].items():

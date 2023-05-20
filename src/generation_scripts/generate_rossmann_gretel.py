@@ -7,7 +7,7 @@ import pandas as pd
 from tqdm import tqdm
 from IPython.display import display, HTML
 from gretel_trainer.relational import MultiTable
-from rike.generation import generation_utils
+from rike import utils
 from gretel_client import configure_session
 
 # get api key from .env
@@ -46,8 +46,8 @@ def join_tables(parent: str, child: str, relational_data=RelationalData()):
 # Alternatively, manually define relational data
 # Uncomment code to run
 
-
-for k in tqdm(range(10)):
+limit = 5
+for k in tqdm(range(limit)):
     csv_dir = f"../../data/splits/{DATASET_NAME}/{DATASET_NAME}_leave_out_{k}"
     parent_table = (f"store_train_{k}", "Store")
     child1_table = (f"test_train_{k}", "Id")
@@ -66,15 +66,17 @@ for k in tqdm(range(10)):
 
     relational_data = RelationalData()
 
+    tables_train, tables_test = utils.get_train_test_split(DATASET_NAME, k, limit=5)
+
     for table, pk in tables:
         relational_data.add_table(
-            name=table, primary_key=pk, data=pd.read_csv(f"{csv_dir}/{table}.csv"))
+            name=table, primary_key=pk, data=tables_train[table[:-2]])
 
     for fk, ref in foreign_keys:
         relational_data.add_foreign_key(foreign_key=fk, referencing=ref)
 
-    print("\033[1m Source Data: \033[0m")
-    source_data = join_tables(parent_table[0], child1_table[0], relational_data=relational_data)
+    # print("\033[1m Source Data: \033[0m")
+    # source_data = join_tables(parent_table[0], child1_table[0], relational_data=relational_data)
 
     gretel_model = "lstm"
     multitable = MultiTable(
@@ -84,7 +86,7 @@ for k in tqdm(range(10)):
         # refresh_interval=60
     )
     multitable.train()
-    multitable.generate(record_size_ratio=0.1)
+    multitable.generate(record_size_ratio=0.2)
 
     table = "store"  # @param {type:"string"}
 
@@ -97,10 +99,10 @@ for k in tqdm(range(10)):
     # display(synth_table)
 
     synthetic_data = multitable.synthetic_output_tables
-    generation_utils.save_data(synthetic_data, DATASET_NAME, k, method=METHOD_NAME)
+    utils.save_data(synthetic_data, DATASET_NAME, k, method=METHOD_NAME)
 
 # %%
 # METHOD_NAME='gretel'
 # synthetic_data = multitable.synthetic_output_tables
-# generation_utils.save_data(synthetic_data, DATASET_NAME, k, method=METHOD_NAME)
+# utils.save_data(synthetic_data, DATASET_NAME, k, method=METHOD_NAME)
 # %%

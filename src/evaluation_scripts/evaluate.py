@@ -31,7 +31,7 @@ single_table_metrics = [
 
 # %%
 report = generate_report(args.dataset_name, args.method_name,
-                         single_table_metrics=single_table_metrics, save_report=True)
+                         single_table_metrics=single_table_metrics, save_report=True, limit=5)
 # print formatted report dict
 print(json.dumps(report, indent=4))
 
