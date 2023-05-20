@@ -13,6 +13,8 @@ def generate_metadata(dataset_name, original_data, save_metadata=False):
         return generate_coupon_metadata(dataset_name, original_data, save_metadata)
     if dataset_name == "telstra-competition-dataset":
         return generate_telstra_metadata(dataset_name, original_data, save_metadata)
+    if dataset_name == "zurich":
+        return generate_zurich_metadata(dataset_name, original_data, save_metadata)
     raise ValueError(f"Dataset {dataset_name} not supported")
 
 
@@ -435,6 +437,7 @@ def generate_telstra_metadata(dataset_name, original_data, save_metadata=False):
         save_metadata(metadata, dataset_name)
     return metadata
 
+
 def generate_coupon_metadata(dataset_name, original_data, save_metadata=False):
     metadata = Metadata()
 
@@ -566,3 +569,179 @@ def generate_coupon_metadata(dataset_name, original_data, save_metadata=False):
     if save_metadata:
         save_metadata(metadata, dataset_name)
     return metadata
+
+
+def generate_zurich_metadata(dataset_name, original_data, save_metadata=False):
+    metadata = Metadata()
+    # customer data:
+    # customer_id,customer_type,gender,country_part,date_of_birth(1986-02-17),household_id,household_role
+    customer_fields = {
+        'customer_id': {
+            'type': 'id',
+            'subtype': 'string',
+        },
+        'customer_type': {
+            'type': 'categorical',
+        },
+        'gender': {
+            'type': 'categorical',
+        },
+        'country_part': {
+            'type': 'categorical',
+        },
+        'date_of_birth': {
+            'type': 'datetime',
+            'format': '%Y-%m-%d',
+        },
+        'household_id': {
+            'type': 'id',
+            'subtype': 'string',
+        },
+        'household_role': {
+            'type': 'categorical',
+        },
+    }
+
+    # policy data:
+    # underwriting_date (2013-05-17), first_end_date (2013-07-14),cancellation_or_end_date (2013-07-14),
+    # policy_id,sales_channel,customer_id,premium,status,line,product_name,product_group
+    policy_fields = {
+        'underwriting_date': {
+            'type': 'datetime',
+            'format': '%Y-%m-%d',
+        },
+        'first_end_date': {
+            'type': 'datetime',
+            'format': '%Y-%m-%d',
+        },
+        'cancellation_or_end_date': {
+            'type': 'datetime',
+            'format': '%Y-%m-%d',
+        },
+        'policy_id': {
+            'type': 'id',
+            'subtype': 'string',
+        },
+        'sales_channel': {
+            'type': 'categorical',
+        },
+        'customer_id': {
+            'type': 'id',
+            'subtype': 'string',
+        },
+        'premium': {
+            'type': 'numerical',
+            'subtype': 'float',
+        },
+        'status': {
+            'type': 'categorical',
+        },
+        'line': {
+            'type': 'categorical',
+        },
+        'product_name': {
+            'type': 'categorical',
+        },
+        'product_group': {
+            'type': 'categorical',
+        },
+    }
+
+    # claim data:
+    # claim_expense,claim_paid,claim_recovered,claim_reserved,claim_status,claim_total_value,
+    # date_closed (2013-05-17),date_open (2013-05-17),event_date (2013-05-17),policy_id,claim_id,customer_id
+
+    claim_fields = {
+        'claim_expense': {
+            'type': 'numerical',
+            'subtype': 'float',
+        },
+        'claim_paid': {
+            'type': 'numerical',
+            'subtype': 'float',
+        },
+        'claim_recovered': {
+            'type': 'numerical',
+            'subtype': 'float',
+        },
+        'claim_reserved': {
+            'type': 'numerical',
+            'subtype': 'float',
+        },
+        'claim_status': {
+            'type': 'categorical',
+        },
+        'claim_total_value': {
+            'type': 'numerical',
+            'subtype': 'float',
+        },
+        'date_closed': {
+            'type': 'datetime',
+            'format': '%Y-%m-%d',
+        },
+        'date_open': {
+            'type': 'datetime',
+            'format': '%Y-%m-%d',
+        },
+        'event_date': {
+            'type': 'datetime',
+            'format': '%Y-%m-%d',
+        },
+        'policy_id': {
+            'type': 'id',
+            'subtype': 'string',
+        },
+        'claim_id': {
+            'type': 'id',
+            'subtype': 'string',
+        },
+        'customer_id': {
+            'type': 'id',
+            'subtype': 'string',
+        },
+    }
+
+    metadata.add_table(
+        name="customers",
+        data=original_data["customers"],
+        primary_key="customer_id",
+        fields_metadata=customer_fields
+    )
+
+    metadata.add_table(
+        name="policies",
+        data=original_data["policies"],
+        primary_key="policy_id",
+        fields_metadata=policy_fields
+    )
+
+    metadata.add_table(
+        name="claims",
+        data=original_data["claims"],
+        primary_key="claim_id",
+        fields_metadata=claim_fields
+    )
+
+    metadata.add_relationship(
+        parent="customers",
+        child="policies",
+        foreign_key="customer_id",
+    )
+
+    metadata.add_relationship(
+        parent="policies",
+        child="claims",
+        foreign_key="policy_id",
+    )
+
+    metadata.add_relationship(
+        parent="customers",
+        child="claims",
+        foreign_key="customer_id",
+    )
+
+    if save_metadata:
+        save_metadata(metadata, dataset_name)
+    return metadata 
+
+
