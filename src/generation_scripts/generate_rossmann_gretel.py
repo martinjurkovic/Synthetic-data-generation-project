@@ -1,4 +1,6 @@
 # %%
+import os
+from dotenv import load_dotenv
 from gretel_trainer.relational import *
 from gretel_trainer.relational import RelationalData
 import pandas as pd
@@ -6,6 +8,12 @@ from tqdm import tqdm
 from IPython.display import display, HTML
 from gretel_trainer.relational import MultiTable
 from rike.generation import generation_utils
+from gretel_client import configure_session
+
+# get api key from .env
+load_dotenv()
+
+configure_session(api_key=os.environ.get("GRETEL_API_KEY"), validate=True)
 
 DATASET_NAME = "rossmann-store-sales"
 METHOD_NAME='gretel'

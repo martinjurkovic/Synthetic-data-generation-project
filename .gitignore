@@ -10,7 +10,7 @@ models/*
 
 reports/*.pkl
 
-src/generation_scripts/*be1f3
+src/generation_scripts/mar*
 
 # VS CODE
 .vscode
