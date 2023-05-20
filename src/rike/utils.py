@@ -6,14 +6,19 @@ CWD_PROJECT = os.getcwd().split(
     'Synthetic-data-generation-project')[0] + 'Synthetic-data-generation-project'
 
 
-def read_tables(dataset_name, leave_out_fold_num, type, split_by="_", name_index=1, limit=None, **kwargs):
+def read_tables(dataset_name, leave_out_fold_num, type, split_by="_", name_index=1, limit=None, synthetic=False, method_name=None, **kwargs):
     highest_fold = 99999
     if limit is not None:
         highest_fold = limit
+
     cwd = os.getcwd()
     cwd_project = cwd.split(
         'Synthetic-data-generation-project')[0] + 'Synthetic-data-generation-project'
-    path = cwd_project + '/data/splits/' + dataset_name + '/'
+    if synthetic:
+        path = cwd_project + '/data/synthetic/' + dataset_name + '/' + method_name + '/'
+    else:
+        path = cwd_project + '/data/splits/' + dataset_name + '/'
+
     tables = {}
     for file in os.listdir(path):
         if file.endswith(".csv"):
@@ -40,9 +45,9 @@ def read_tables(dataset_name, leave_out_fold_num, type, split_by="_", name_index
     return tables
 
 
-def get_train_test_split(dataset_name, leave_out_fold_num, limit=None):
-    tables_train = read_tables(dataset_name, leave_out_fold_num, "train", limit=limit)
-    tables_test = read_tables(dataset_name, leave_out_fold_num, "test", limit=limit)
+def get_train_test_split(dataset_name, leave_out_fold_num, limit=None, synthetic=False, method_name = None):
+    tables_train = read_tables(dataset_name, leave_out_fold_num, "train", limit=limit, synthetic=synthetic, method_name=method_name)
+    tables_test = read_tables(dataset_name, leave_out_fold_num, "test", limit=limit, synthetic=synthetic, method_name=method_name)
     return tables_train, tables_test
 
 def save_train_test_split(dataset_name, leave_out_fold_num, tables_train, tables_test):

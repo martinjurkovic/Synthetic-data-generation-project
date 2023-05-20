@@ -27,7 +27,7 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
         }
 
     # load metadata
-    tables_original = read_original_tables(dataset_name, limit=limit)
+    tables_original = read_original_tables(dataset_name)
     metadata = sdv_metadata.generate_metadata(dataset_name, tables_original)
     # categorical = {}
     # for table, fields in metadata.to_dict()['tables'].items():
@@ -39,9 +39,9 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
 
     for k in tqdm(range(10)):
         tables_orig_train, tables_orig_test = get_train_test_split(
-            dataset_name, test_fold_index=k, synthetic=False)
+            dataset_name, leave_out_fold_num=k, synthetic=False)
         tables_synthetic_train, tables_synthetic_test = get_train_test_split(
-            dataset_name, test_fold_index=k, synthetic=True, method_name=method_name)
+            dataset_name, leave_out_fold_num=k, synthetic=True, method_name=method_name)
         
         # for table, fields in categorical.items():
         #     for field, values in fields.items():
