@@ -11,7 +11,7 @@ from rike.generation import sdv_metadata
 load_dotenv()
 
 args = argparse.ArgumentParser()
-args.add_argument("--dataset-name", type=str, default="biodegradability")
+args.add_argument("--dataset-name", type=str, default="rossmann-store-sales")
 args.add_argument("--varchar-length", type=int, default=255)
 args.add_argument("--pk-length", type=int, default=20)
 args = args.parse_args()
@@ -23,7 +23,7 @@ connection = psycopg2.connect(host=os.environ.get('PG_HOST'),
                         port=os.environ.get('PG_PORT'),
                         user=os.environ.get('PG_USER'),
                         password=os.environ.get('PG_PASSWORD'),
-                        dbname=args.dataset_name,
+                        dbname=args.dataset_name.split("-")[0],
                         sslmode='require')
 
 cursor = connection.cursor()
@@ -69,7 +69,7 @@ def create_table_query(table_name, metadata, k=0, varchar_length=255, pk_length=
         elif values['type'] == 'boolean':
             fields_str += f"{field} BOOLEAN, "
         elif values['type'] == 'datetime':
-            fields_str += f"{field} TIMESTAMP, "
+            fields_str += f"{field} DATE, "
         else:
             raise ValueError(f'Unknown type {values["type"]} for field {field}')
     fields_str = fields_str[:-2]
@@ -101,32 +101,50 @@ def execute_write_query(query, cursor, connection, values):
             #print("Query executed successfully")
     
         except psycopg2.Error as error:
+            raise error
             # Handle any errors that occur during query execution
-            print("Error executing query:", error)
+            # print("Error executing query:", error)
 
 
 def insert_rows(table_name, df, k=0):
     insert_query = f"INSERT INTO {table_name}_fold_{k} VALUES (" + "%s,"*(len(df.columns)-1) + "%s)"
     for i, row in tqdm(df.iterrows(), total=df.shape[0]):
         execute_write_query(insert_query, cursor, connection, tuple(row))
+        # break
 
-
-# CREATE TABLES
-# clear the database
-connection.commit()
-execute_query("DROP SCHEMA public CASCADE; CREATE SCHEMA public;", cursor, connection)
-connection.commit()
-
-# create the tables
-for k in tqdm(range(10)):
-    tables_train, tables_test = utils.get_train_test_split(dataset_name, k)
-    metadata = sdv_metadata.generate_metadata(dataset_name, tables_train)
-    for table_name in metadata.to_dict()['tables'].keys():
-        # create the table
-        query = create_table_query(table_name, metadata, k, 
-                                   varchar_length=args.varchar_length, 
-                                   pk_length=args.pk_length)
-        execute_query(query, cursor, connection)
-        # insert the rows
+def insert_batch_rows(table_name, df, k=0, batch_size=100):
+    insert_query = f"INSERT INTO {table_name}_fold_{k} VALUES (" + "%s,"*(len(df.columns)-1) + "%s)"
+    rows = [tuple(row) for _, row in df.iterrows()]
+    # Insert rows in batches
+    total_rows = len(rows)
+    batch_size = total_rows if batch_size > total_rows else batch_size
+    for i in tqdm(range(0, total_rows, batch_size)):
+        batch = rows[i:i+batch_size] if i+batch_size <= total_rows else rows[i:]
+        cursor.executemany(insert_query, batch)
         connection.commit()
-        insert_rows(table_name, tables_train[table_name], k)
+
+
+if __name__ == "__main__":
+    # CREATE TABLES
+    # clear the database
+    connection.commit()
+    execute_query("DROP SCHEMA public CASCADE; CREATE SCHEMA public;", cursor, connection)
+    connection.commit()
+
+    # create the tables
+    for k in tqdm(range(10)):
+        tables_train, tables_test = utils.get_train_test_split(dataset_name, k)
+        metadata = sdv_metadata.generate_metadata(dataset_name, tables_train)
+        for table_name in metadata.to_dict()['tables'].keys():
+            # create the table
+            query = create_table_query(table_name, metadata, k, 
+                                    varchar_length=args.varchar_length, 
+                                    pk_length=args.pk_length)
+            execute_query(query, cursor, connection)
+            # insert the rows
+            connection.commit()
+            fields = metadata.to_dict()['tables'][table_name]['fields']
+            # reorder the columns of tables_train[table_name] to be like in the metadata
+            tables_train[table_name] = tables_train[table_name][list(fields.keys())]
+            # insert_rows(table_name, tables_train[table_name], k)
+            insert_batch_rows(table_name, tables_train[table_name], k, batch_size=1000)
