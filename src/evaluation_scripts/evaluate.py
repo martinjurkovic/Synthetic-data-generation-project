@@ -12,6 +12,7 @@ from rike.evaluation.report import generate_report
 args = argparse.ArgumentParser()
 args.add_argument("--dataset-name", type=str, default="biodegradability")
 args.add_argument("--method-name", type=str, default="rctgan")
+args.add_argument("--limit", type=int, default=10)
 args, unknown = args.parse_known_args()
 
 
@@ -31,7 +32,8 @@ single_table_metrics = [
 
 # %%
 report = generate_report(args.dataset_name, args.method_name,
-                         single_table_metrics=single_table_metrics, save_report=True, limit=5)
+                         single_table_metrics=single_table_metrics, save_report=True,
+                         limit=args.limit)
 # print formatted report dict
 print(json.dumps(report, indent=4))
 
