@@ -24,6 +24,8 @@ base_path = CWD_PROJECT + '/data/synthetic/' + dataset_name + '/RCTGAN/'
 
 # GENERATE SYNTHETIC DATA
 for k in tqdm.tqdm(range(10)):
+    model_save_path = f'models/rctgan/{dataset_name}/model_{k}.pickle'
+    os.makedirs(os.path.dirname(model_save_path), exist_ok=True)
     tables_train, tables_test = utils.get_train_test_split(dataset_name, k)
     metadata = sdv_metadata.generate_metadata(dataset_name, tables_train)
 
@@ -37,13 +39,13 @@ for k in tqdm.tqdm(range(10)):
             generated = True
             break
     if generated:
-        model = pickle.load(open(f'models/model_rctgan_{dataset_name}_fold_{k}.pickle', "rb" ) )
+        model = pickle.load(open(model_save_path, "rb" ) )
     else:
         model = RCTGAN(metadata)
         # ignores warnings being raised inside the RCTGAN package
         with pd.option_context('mode.chained_assignment', None):
             model.fit(tables_train)
-        pickle.dump(model, open(f'models/model_rctgan_{dataset_name}_fold_{k}.pickle', "wb" ) )
+        pickle.dump(model, open(model_save_path, "wb" ) )
     synthetic_data = model.sample(num_rows=tables_test[root_table_name].shape[0])
     utils.save_data(synthetic_data, dataset_name, k, method='RCTGAN')
 # %%
