@@ -79,7 +79,7 @@ def ends_with_digit(string):
     pattern = r"_train_\d$"
     return bool(re.search(pattern, string))
 
-def save_data(tables_synthetic, dataset_name, leave_out_fold_num, method='SDV'):
+def save_data(tables_synthetic, dataset_name, leave_out_fold_num, method='SDV', index=False):
     path = CWD_PROJECT + '/data/synthetic/' + dataset_name + '/' + method + '/'
     # create directory if not exists
     if not os.path.exists(path):
@@ -88,4 +88,4 @@ def save_data(tables_synthetic, dataset_name, leave_out_fold_num, method='SDV'):
         if ends_with_digit(table_name):
             table_name = table_name[:-8]
         table.to_csv(
-            path + f'{dataset_name}_{table_name}_fold_{leave_out_fold_num}.csv', index=False)
+            path + f'{dataset_name}_{table_name}_fold_{leave_out_fold_num}.csv', index=index)
