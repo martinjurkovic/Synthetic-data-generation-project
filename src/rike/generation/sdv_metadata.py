@@ -749,12 +749,6 @@ def generate_zurich_metadata(dataset_name, original_data, save_metadata=False):
         foreign_key="policy_id",
     )
 
-    metadata.add_relationship(
-        parent="customers",
-        child="claims",
-        foreign_key="customer_id",
-    )
-
     if save_metadata:
         save_metadata(metadata, dataset_name)
     return metadata 
