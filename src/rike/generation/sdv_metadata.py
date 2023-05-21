@@ -85,7 +85,7 @@ def generate_mutagenesis_metadata(dataset_name, original_data, save_metadata=Fal
     bond_fields = {
         'bond_id': {
             'type': 'id',
-            'subtype': 'string'
+            'subtype': 'integer'
         },
         'atom1_id': {
             'type': 'id',
