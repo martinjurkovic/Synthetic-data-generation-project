@@ -4,6 +4,8 @@ import rike.split_utils as utils
 # READ DATA
 dataset_name = "zurich"
 original_data = utils.read_tables(dataset_name)
+frac = 100000 / len(original_data["customers"])
+original_data["customers"] = original_data["customers"].sample(frac=frac)
 
 # %%
 # %%

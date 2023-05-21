@@ -312,3 +312,7 @@ def discriminative_detection(original_test, synthetic_test, original_train, synt
         df.sort_values(by='importance', ascending=False, inplace=True)
         df.to_csv(feature_importance_path, index=False)
     return accuracy_score(y_test, y_pred)
+
+
+def parent_child_discriminative_detection(original_test, synthetic_test, original_train, synthetic_train, clf=LogisticRegression(solver='lbfgs'), **kwargs):
+    metadata = kwargs.get('metadata', None)

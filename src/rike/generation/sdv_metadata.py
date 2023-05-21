@@ -17,7 +17,7 @@ def get_root_table(dataset_name):
     raise ValueError(f"Dataset {dataset_name} not supported")
 
 
-def generate_metadata(dataset_name, original_data, save_metadata=False):
+def generate_metadata(dataset_name, original_data, save=False):
     if dataset_name == "biodegradability":
         return generate_biodegradability_metadata(dataset_name, original_data, save_metadata)
     if dataset_name == "rossmann-store-sales":
@@ -42,7 +42,7 @@ def save_metadata(metadata, dataset_name):
     metadata.to_json(f'{path}/{dataset_name}_metadata.json')
 
 
-def generate_rossman_metadata(dataset_name, original_data, save_metadata=False):
+def generate_rossman_metadata(dataset_name, original_data, save=False):
     metadata = Metadata()
     metadata.add_table(
         name='store',
@@ -73,7 +73,7 @@ def generate_rossman_metadata(dataset_name, original_data, save_metadata=False):
     return metadata
 
 
-def generate_mutagenesis_metadata(dataset_name, original_data, save_metadata=False):
+def generate_mutagenesis_metadata(dataset_name, original_data, save=False):
     metadata = Metadata()
     atom_fields = {
         'atom_id': {
@@ -186,7 +186,7 @@ def generate_mutagenesis_metadata(dataset_name, original_data, save_metadata=Fal
     return metadata
 
 
-def generate_biodegradability_metadata(dataset_name, original_data, save_metadata=False):
+def generate_biodegradability_metadata(dataset_name, original_data, save=False):
     metadata = Metadata()
 
     # Specification of fields propreties
@@ -313,7 +313,7 @@ def generate_biodegradability_metadata(dataset_name, original_data, save_metadat
     return metadata
 
 
-def generate_telstra_metadata(dataset_name, original_data, save_metadata=False):
+def generate_telstra_metadata(dataset_name, original_data, save=False):
     metadata = Metadata()
 
     train_fields = {
@@ -453,7 +453,7 @@ def generate_telstra_metadata(dataset_name, original_data, save_metadata=False):
     return metadata
 
 
-def generate_coupon_metadata(dataset_name, original_data, save_metadata=False):
+def generate_coupon_metadata(dataset_name, original_data, save=False):
     metadata = Metadata()
 
     user_list_fields = {
@@ -586,7 +586,7 @@ def generate_coupon_metadata(dataset_name, original_data, save_metadata=False):
     return metadata
 
 
-def generate_zurich_metadata(dataset_name, original_data, save_metadata=False):
+def generate_zurich_metadata(dataset_name, original_data, save=False):
     metadata = Metadata()
     # customer data:
     # customer_id,customer_type,gender,country_part,date_of_birth(1986-02-17),household_id,household_role
