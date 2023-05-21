@@ -12,8 +12,10 @@ import wandb
 
 args = argparse.ArgumentParser()
 args.add_argument("--dataset-name", type=str, default="rossmann-store-sales")
+args.add_argument("--full_sensitivity", type=bool, default=True)
 args = args.parse_args()
 dataset_name = args.dataset_name
+full_sensitivity = args.full_sensitivity
 root_table_name = sdv_metadata.get_root_table(dataset_name)
 
 os.environ["WANDB_PROJECT"]=f"REALTABFORMER_{dataset_name}"
@@ -53,7 +55,7 @@ for k in tqdm.tqdm(range(10)):
         parent_model = REaLTabFormer(model_type="tabular", batch_size=batch_size_parent, report_to="wandb")
         os.makedirs(parent_model_path, exist_ok=True)
         # fit and save parent model
-        parent_model.fit(parent_df.drop(join_on, axis=1), full_sensitivity=True)
+        parent_model.fit(parent_df.drop(join_on, axis=1), full_sensitivity=full_sensitivity)
         parent_model.save(parent_model_path)
     # load trained parent model
     directories = list(filter(os.path.isdir, glob.glob(f"{parent_model_path}/id*")))

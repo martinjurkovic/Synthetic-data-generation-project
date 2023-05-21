@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name="REALTABFORMER COUPONS"
+#SBATCH --job-name="COUP_REALTABFORMER"
 #SBATCH --output=logs/sling-realtabformer-coupons-%J.out
 #SBATCH --error=logs/sling-realtabformer-coupons-%J.err
 #SBATCH --time=08:00:00 # job time limit - full format is D-H:M:S
@@ -12,4 +12,4 @@
 
 source /d/hpc/projects/FRI/mj5835/miniconda3/etc/profile.d/conda.sh # intialize conda
 conda activate realtabformer_env # activate the previously created environment
-srun --nodes=1 --exclusive --gres=gpu:2 --ntasks=1 python /d/hpc/projects/FRI/mj5835/Synthetic-data-generation-project/src/generation_scripts/generate_realtabformer.py --dataset-name coupon-purchase-prediction 
+srun --nodes=1 --exclusive --gres=gpu:2 --ntasks=1 python /d/hpc/projects/FRI/mj5835/Synthetic-data-generation-project/src/generation_scripts/generate_realtabformer.py --dataset-name coupon-purchase-prediction --full_sensitivity False

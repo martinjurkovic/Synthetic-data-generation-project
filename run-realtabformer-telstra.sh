@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name="REALTABFORMER TELSTRA"
+#SBATCH --job-name="TELS_REALTABFORMER"
 #SBATCH --output=logs/sling-realtabformer-telstra-%J.out
 #SBATCH --error=logs/sling-realtabformer-telstra-%J.err
 #SBATCH --time=08:00:00 # job time limit - full format is D-H:M:S

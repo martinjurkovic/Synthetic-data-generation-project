@@ -16,7 +16,9 @@ original_data['coupon_visit_train'] = utils.add_primary_key(
 
 # %%
 # SPLIT DATASET 10 FOLD
-user_folds = utils.split_k_fold(original_data["user_list"])
+# sample 10% of users
+users_sampled = original_data["user_list"].sample(frac=0.05, random_state=42)
+user_folds = utils.split_k_fold(users_sampled)
 # coupon_folds = utils.split_k_fold(original_data["coupon_list_train"])
 
 # %%
