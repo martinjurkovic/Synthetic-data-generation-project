@@ -37,11 +37,11 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
     #             categorical[table][field] = tables_original[table][field].unique()
     #             print(table, categorical[table][field])
 
-    for k in tqdm(range(10)):
+    for k in tqdm(range(min(10, limit))):
         tables_orig_train, tables_orig_test = get_train_test_split(
-            dataset_name, leave_out_fold_num=k, synthetic=False)
+            dataset_name, leave_out_fold_num=k, synthetic=False, limit=limit)
         tables_synthetic_train, tables_synthetic_test = get_train_test_split(
-            dataset_name, leave_out_fold_num=k, synthetic=True, method_name=method_name)
+            dataset_name, leave_out_fold_num=k, synthetic=True, method_name=method_name, limit=limit)
         
         # for table, fields in categorical.items():
         #     for field, values in fields.items():
@@ -77,6 +77,11 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
             tables_synthetic_test[table] = tables_synthetic_test[table].reindex(column_order, axis=1)
             tables_synthetic_train[table] = tables_synthetic_train[table].reindex(column_order, axis=1)
 
+            if len(tables_synthetic_test[table]) > len(tables_orig_test[table]):
+                tables_synthetic_test[table] = tables_synthetic_test[table].sample(n=len(tables_orig_test[table]))
+
+            if len(tables_synthetic_train[table]) > len(tables_orig_train[table]):
+                tables_synthetic_train[table] = tables_synthetic_train[table].sample(n=len(tables_orig_train[table]))
 
         # Single table metrics
         for table_name in tables_orig_test.keys():
