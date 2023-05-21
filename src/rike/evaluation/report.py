@@ -77,6 +77,9 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
             tables_synthetic_test[table] = tables_synthetic_test[table].reindex(column_order, axis=1)
             tables_synthetic_train[table] = tables_synthetic_train[table].reindex(column_order, axis=1)
 
+            # TODO: rework data stratification
+            # This is probably not ok, we should stratify only the parent table 
+            # and then sample the child tables accordingly
             if len(tables_synthetic_test[table]) > len(tables_orig_test[table]):
                 tables_synthetic_test[table] = tables_synthetic_test[table].sample(n=len(tables_orig_test[table]))
 
