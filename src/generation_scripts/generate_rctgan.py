@@ -13,11 +13,10 @@ from rctgan import RCTGAN
 
 args = argparse.ArgumentParser()
 args.add_argument("--dataset-name", type=str, default="biodegradability")
-args.add_argument("--root-table", type=str, default="molecule")
 args = args.parse_args()
 
 dataset_name = args.dataset_name
-root_table_name = args.root_table
+root_table_name = sdv_metadata.get_root_table(dataset_name)
 
 CWD_PROJECT = os.getcwd().split(
     'Synthetic-data-generation-project')[0] + 'Synthetic-data-generation-project'

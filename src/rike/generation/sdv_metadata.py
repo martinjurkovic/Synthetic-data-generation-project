@@ -1,6 +1,21 @@
 import os
 from sdv import Metadata
 
+def get_root_table(dataset_name):
+    if dataset_name == "biodegradability":
+        return "molecule"
+    if dataset_name == "rossmann-store-sales":
+        return "store"
+    if dataset_name == "mutagenesis":
+        return "molecule"
+    if dataset_name == "coupon-purchase-prediction":
+        return "user_list"
+    if dataset_name == "telstra-competition-dataset":
+        return "train"
+    if dataset_name == "zurich":
+        return "customers"
+    raise ValueError(f"Dataset {dataset_name} not supported")
+
 
 def generate_metadata(dataset_name, original_data, save_metadata=False):
     if dataset_name == "biodegradability":

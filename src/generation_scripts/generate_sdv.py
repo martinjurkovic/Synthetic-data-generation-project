@@ -10,11 +10,10 @@ logger = logging_config.logger
 
 args = argparse.ArgumentParser()
 args.add_argument("--dataset-name", type=str, default="rossmann-store-sales")
-args.add_argument("--root-table-name", type=str, default="store")
 args = args.parse_args()
 
 dataset_name = args.dataset_name
-root_table_name = args.root_table_name
+root_table_name = sdv_metadata.get_root_table(dataset_name)
 
 # %%
 # GENERATE SYNTHETIC DATA
