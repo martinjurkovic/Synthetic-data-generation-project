@@ -50,6 +50,7 @@ def get_train_test_split(dataset_name, leave_out_fold_num, limit=None, synthetic
     tables_test = read_tables(dataset_name, leave_out_fold_num, "test", limit=limit, synthetic=synthetic, method_name=method_name)
     return tables_train, tables_test
 
+
 def save_train_test_split(dataset_name, leave_out_fold_num, tables_train, tables_test):
     path = CWD_PROJECT + '/data/splits/' + dataset_name + '/' + dataset_name + '_leave_out_' + str(leave_out_fold_num)
     # create directory if not exists
@@ -75,9 +76,11 @@ def read_original_tables(dataset_name, split_by="-", name_index=-1, **kwargs):
             tables[table_name] = table
     return tables
 
+
 def ends_with_digit(string):
     pattern = r"_train_\d$"
     return bool(re.search(pattern, string))
+
 
 def save_data(tables_synthetic, dataset_name, leave_out_fold_num, method='SDV', index=False):
     path = CWD_PROJECT + '/data/synthetic/' + dataset_name + '/' + method + '/'
@@ -89,3 +92,29 @@ def save_data(tables_synthetic, dataset_name, leave_out_fold_num, method='SDV', 
             table_name = table_name[:-8]
         table.to_csv(
             path + f'{dataset_name}_{table_name}_fold_{leave_out_fold_num}.csv', index=index)
+
+
+def find_fk(parent, reference, metadata):
+    for field in metadata.to_dict()['tables'][parent]['fields']:
+        if field in reference:
+            return field
+    return None 
+
+
+def merge_children(tables, metadata, root):
+    parent = tables[root]
+    children = metadata.get_children(root)
+    for child in children:
+        fks = metadata.get_foreign_keys(root, child)
+        for fk in fks:
+            parent_fk = find_fk(root, fk, metadata)
+            if parent_fk is None:
+                continue
+            child_table = merge_children(tables, metadata, child)
+            if fk in parent.columns:
+                parent = parent.merge(child_table, left_on=fk, right_on=fk, how='outer', suffixes=(f'_{root}', f'_{child}'))
+            else:
+                # this happens when there are 2 foreign keys from the same table
+                # e.g. bond in biodegradabaility with fks atom_id and atom_id_2
+                parent = parent.merge(child_table, left_on=parent_fk, right_on=fk, how='outer', suffixes=(f'_{root}', f'_{child}')) 
+    return parent

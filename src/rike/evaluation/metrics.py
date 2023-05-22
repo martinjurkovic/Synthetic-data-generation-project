@@ -17,6 +17,8 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
 import xgboost as xgb
 
+from rike.utils import merge_children
+
 
 def get_frequency(
     original: pd.DataFrame, synthetic: pd.DataFrame, nbins: int = 10
@@ -313,6 +315,58 @@ def discriminative_detection(original_test, synthetic_test, original_train, synt
         df.to_csv(feature_importance_path, index=False)
     return accuracy_score(y_test, y_pred)
 
-
-def parent_child_discriminative_detection(original_test, synthetic_test, original_train, synthetic_train, clf=LogisticRegression(solver='lbfgs'), **kwargs):
+   
+def parent_child_discriminative_detection(original_test, synthetic_test, original_train, synthetic_train, clf=xgb.XGBClassifier(), **kwargs):
     metadata = kwargs.get('metadata', None)
+    root_table = kwargs.get('root_table', None)
+    # join parent and child tables based on the metadata
+    original_train = merge_children(original_train, metadata, root_table)
+    synthetic_train = merge_children(synthetic_train, metadata, root_table)
+    original_test = merge_children(original_test, metadata, root_table)
+    synthetic_test = merge_children(synthetic_test, metadata, root_table)
+
+    # drop all foreign and primary keys
+    primary_key = metadata.to_dict()['tables'][root_table]['primary_key']
+    synthetic_ids = synthetic_test.get(primary_key)
+    original_ids =  original_test.get(primary_key)
+    for table in metadata.to_dict()['tables'].keys():
+        for field, values in metadata.to_dict()['tables'][table].items():
+            if 'ref' in values:
+                foreign_key = field
+                for column in original_train.columns():
+                    if foreign_key in column:
+                        original_train.drop(column, axis=1, inplace=True)
+                        synthetic_train.drop(column, axis=1, inplace=True)
+                        original_test.drop(column, axis=1, inplace=True)
+                        synthetic_test.drop(column, axis=1, inplace=True)
+        pk = metadata.get_primary_key(table)
+        for column in original_train.columns:
+            if pk in column:
+                original_train.drop(column, axis=1, inplace=True)
+                synthetic_train.drop(column, axis=1, inplace=True)
+                original_test.drop(column, axis=1, inplace=True)
+                synthetic_test.drop(column, axis=1, inplace=True)
+
+    ht = HyperTransformer()
+    transformed_original_train = ht.fit_transform(original_train)
+    columns = transformed_original_train.columns
+    transformed_original_train = transformed_original_train.to_numpy()
+    transformed_original_test = ht.transform(original_test).to_numpy()
+    transformed_synthetic_train = ht.transform(synthetic_train).to_numpy()
+    transformed_synthetic_test = ht.transform(synthetic_test).to_numpy()
+
+    X_train = np.concatenate([transformed_original_train, transformed_synthetic_train])
+    # X_test = transformed_synthetic_test 
+    X_test = np.concatenate([transformed_original_test, transformed_synthetic_test])
+    y_train = np.hstack([
+        np.ones(len(transformed_original_train)), np.zeros(len(transformed_synthetic_train))
+    ])
+    # y_test = np.zeros(len(transformed_synthetic_test))
+    y_test = np.hstack([
+        np.ones(len(transformed_original_test)), np.zeros(len(transformed_synthetic_test))
+    ])
+
+    clf = clf.fit(X_train, y_train)
+    probs = clf.predict_proba(X_test)
+    y_pred = probs.argmax(axis=1)
+    return accuracy_score(y_test, y_pred)

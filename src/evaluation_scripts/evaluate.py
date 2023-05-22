@@ -4,7 +4,8 @@ import argparse
 
 from rike.evaluation.metrics import (ks_test, chisquare_test, mean_max_discrepency, 
                                      js_divergence, logistic_detection, random_forest_detection,
-                                     svm_detection, knn_detection, mlp_detection, xgboost_detection)
+                                     svm_detection, knn_detection, mlp_detection, xgboost_detection,
+                                     parent_child_discriminative_detection)
 from rike.evaluation.report import generate_report
 
 
@@ -30,9 +31,15 @@ single_table_metrics = [
                         # js_divergence,
                         ]
 
+multi_table_metrics = [
+                        'cardinality',
+                        parent_child_discriminative_detection]
+
 # %%
 report = generate_report(args.dataset_name, args.method_name,
-                         single_table_metrics=single_table_metrics, save_report=True,
+                         single_table_metrics=single_table_metrics, 
+                         multi_table_metrics=multi_table_metrics,
+                         save_report=True,
                          limit=args.limit)
 # print formatted report dict
 print(json.dumps(report, indent=4))
