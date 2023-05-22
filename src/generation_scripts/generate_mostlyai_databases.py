@@ -14,6 +14,7 @@ args = argparse.ArgumentParser()
 args.add_argument("--dataset-name", type=str, default="rossmann-store-sales")
 args.add_argument("--varchar-length", type=int, default=255)
 args.add_argument("--pk-length", type=int, default=20)
+args.add_argument("--drop", type=bool, default=False)
 args = args.parse_args()
 
 dataset_name = args.dataset_name
@@ -127,9 +128,8 @@ def insert_batch_rows(table_name, df, k=0, batch_size=100):
 if __name__ == "__main__":
     # CREATE TABLES
     # clear the database
-    connection.commit()
-    execute_query("DROP SCHEMA public CASCADE; CREATE SCHEMA public;", cursor, connection)
-    connection.commit()
+    if args.drop:
+        execute_query("DROP SCHEMA public CASCADE; CREATE SCHEMA public;", cursor, connection)
 
     # create the tables
     for k in tqdm(range(10)):
