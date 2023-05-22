@@ -11,8 +11,8 @@ from rike.evaluation.report import generate_report
 
 
 args = argparse.ArgumentParser()
-args.add_argument("--dataset-name", type=str, default="biodegradability")
-args.add_argument("--method-name", type=str, default="rctgan")
+args.add_argument("--dataset-name", type=str, default="rossmann-store-sales")
+args.add_argument("--method-name", type=str, default="gretel")
 args.add_argument("--limit", type=int, default=10)
 args, unknown = args.parse_known_args()
 
