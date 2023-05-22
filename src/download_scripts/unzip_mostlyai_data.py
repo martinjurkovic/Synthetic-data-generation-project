@@ -29,7 +29,7 @@ for file in zip_fies:
                for file in files:
                     table = file.split('_')[0].lower()
                     file_path = os.path.join(unzip_path, subfolder, file)
-                    new_path = os.path.join('data/synthetic', dataset, 'mostlyai', f'{dataset}_{file}')
+                    new_path = os.path.join('data/synthetic', dataset_name, 'mostlyai', f'{dataset_name}_{file}')
                     # create new folder if it does not exist
                     os.makedirs(os.path.dirname(new_path), exist_ok=True)
                     df = pd.read_csv(file_path)
