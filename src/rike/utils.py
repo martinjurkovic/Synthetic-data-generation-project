@@ -118,3 +118,21 @@ def merge_children(tables, metadata, root):
                 # e.g. bond in biodegradabaility with fks atom_id and atom_id_2
                 parent = parent.merge(child_table, left_on=parent_fk, right_on=fk, how='outer', suffixes=(f'_{root}', f'_{child}')) 
     return parent
+
+
+def conditionally_sample(tables, metadata, root):
+    parent = tables[root]
+    children = metadata.get_children(root)
+    for child in children:
+        child_table = tables[child]
+        fks = metadata.get_foreign_keys(root, child)
+        for fk in fks:
+            parent_fk = find_fk(root, fk, metadata)
+            if parent_fk is None:
+                continue
+            parent_ids = parent[parent_fk].unique()
+            child_table = child_table[child_table[fk].isin(parent_ids)]
+            tables[child] = child_table
+            tables = conditionally_sample(tables, metadata, child)
+    return tables
+

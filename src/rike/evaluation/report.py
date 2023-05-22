@@ -6,7 +6,7 @@ import pandas as pd
 from tqdm import tqdm
 
 from rike.generation import sdv_metadata
-from rike.utils import get_train_test_split, read_original_tables
+from rike.utils import get_train_test_split, read_original_tables, conditionally_sample
 from rike.evaluation.metrics import ks_test, cardinality_similarity
 
 
@@ -43,6 +43,22 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
                             tables_synthetic_test,
                             metadata)
             
+        # select the same amout of rows for original and synthetic tables
+        # based on the number of rows in the root table
+        root_table = sdv_metadata.get_root_table(dataset_name)
+        # train
+        nrows = min(tables_orig_test[root_table].shape[0], tables_synthetic_test[root_table].shape[0])
+        tables_orig_train[root_table] = tables_orig_train[root_table].sample(n=nrows, random_state=0)
+        tables_synthetic_train[root_table] = tables_synthetic_train[root_table].sample(n=nrows, random_state=0)
+        tables_synthetic_train = conditionally_sample(tables_synthetic_train, metadata, root_table)
+        tables_orig_train = conditionally_sample(tables_orig_train, metadata, root_table)
+        # test
+        nrows = min(tables_orig_test[root_table].shape[0], tables_synthetic_test[root_table].shape[0])
+        tables_orig_test[root_table] = tables_orig_test[root_table].sample(n=nrows, random_state=0)
+        tables_synthetic_test[root_table] = tables_synthetic_test[root_table].sample(n=nrows, random_state=0)
+        tables_synthetic_test = conditionally_sample(tables_synthetic_test, metadata, root_table)
+        tables_orig_test = conditionally_sample(tables_orig_test, metadata, root_table)
+            
         for table, fields in metadata.to_dict()['tables'].items():
             for field, values in fields['fields'].items():
                 # convert the datetime columns to datetime type
@@ -56,15 +72,6 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
             tables_orig_train[table] = tables_orig_train[table].reindex(column_order, axis=1)
             tables_synthetic_test[table] = tables_synthetic_test[table].reindex(column_order, axis=1)
             tables_synthetic_train[table] = tables_synthetic_train[table].reindex(column_order, axis=1)
-
-            # TODO: rework data stratification
-            # This is probably not ok, we should stratify only the parent table 
-            # and then sample the child tables accordingly
-            if len(tables_synthetic_test[table]) > len(tables_orig_test[table]):
-                tables_synthetic_test[table] = tables_synthetic_test[table].sample(n=len(tables_orig_test[table]))
-
-            if len(tables_synthetic_train[table]) > len(tables_orig_train[table]):
-                tables_synthetic_train[table] = tables_synthetic_train[table].sample(n=len(tables_orig_train[table]))
 
         # Multi table metrics
         for metric in multi_table_metrics:
