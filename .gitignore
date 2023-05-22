@@ -11,6 +11,7 @@ models/*
 reports/*.pkl
 
 src/generation_scripts/mar*
+mj5*/
 
 logs
 rtf_checkpoints

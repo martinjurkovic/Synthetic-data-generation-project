@@ -10,6 +10,7 @@ from gretel_trainer.relational import MultiTable
 from rike import utils
 from gretel_client import configure_session
 
+# %%
 # get api key from .env
 load_dotenv()
 
@@ -66,11 +67,11 @@ for k in tqdm(range(limit)):
 
     relational_data = RelationalData()
 
-    tables_train, tables_test = utils.get_train_test_split(DATASET_NAME, k, limit=5)
+    tables_train, tables_test = utils.get_train_test_split(DATASET_NAME, k)
 
     for table, pk in tables:
         relational_data.add_table(
-            name=table, primary_key=pk, data=tables_train[table[:-2]])
+            name=table, primary_key=pk, data=tables_train[table.split("_")[0]])
 
     for fk, ref in foreign_keys:
         relational_data.add_foreign_key(foreign_key=fk, referencing=ref)
@@ -86,7 +87,8 @@ for k in tqdm(range(limit)):
         # refresh_interval=60
     )
     multitable.train()
-    multitable.generate(record_size_ratio=0.2)
+    ratio = tables_test['store'].shape[0] / tables_train['store'].shape[0]
+    multitable.generate(record_size_ratio=ratio)
 
     table = "store"  # @param {type:"string"}
 
