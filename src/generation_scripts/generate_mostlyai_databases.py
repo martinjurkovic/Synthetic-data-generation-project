@@ -11,10 +11,10 @@ from rike.generation import sdv_metadata
 load_dotenv()
 
 args = argparse.ArgumentParser()
-args.add_argument("--dataset-name", type=str, default="rossmann-store-sales")
+args.add_argument("--dataset-name", type=str, default="mutagenesis")
 args.add_argument("--varchar-length", type=int, default=255)
 args.add_argument("--pk-length", type=int, default=20)
-args.add_argument("--drop", type=bool, default=False)
+args.add_argument("--drop", type=bool, default=True)
 args = args.parse_args()
 
 dataset_name = args.dataset_name
@@ -24,7 +24,8 @@ connection = psycopg2.connect(host=os.environ.get('PG_HOST'),
                         port=os.environ.get('PG_PORT'),
                         user=os.environ.get('PG_USER'),
                         password=os.environ.get('PG_PASSWORD'),
-                        dbname=args.dataset_name.split("-")[0],
+                        # dbname=args.dataset_name.split("-")[0],
+                        dbname='rossmann',
                         sslmode='require')
 
 cursor = connection.cursor()
@@ -33,7 +34,9 @@ cursor = connection.cursor()
 # TABLE GENERATION FUNCTIONS
 def find_fk(parent, reference, metadata):
     for field in metadata.to_dict()['tables'][parent]['fields']:
-        if field in reference:
+        # remove all digits from the field name
+        reference_digit = ''.join([i for i in reference if not i.isdigit()])
+        if field in reference or field in reference_digit:
             return field
 
 
@@ -123,6 +126,7 @@ def insert_batch_rows(table_name, df, k=0, batch_size=100):
         batch = rows[i:i+batch_size] if i+batch_size <= total_rows else rows[i:]
         cursor.executemany(insert_query, batch)
         connection.commit()
+        # break
 
 
 if __name__ == "__main__":
@@ -141,8 +145,9 @@ if __name__ == "__main__":
                                     varchar_length=args.varchar_length, 
                                     pk_length=args.pk_length)
             execute_query(query, cursor, connection)
+            # check if the table exists
             # insert the rows
-            connection.commit()
+            # connection.commit()
             fields = metadata.to_dict()['tables'][table_name]['fields']
             # reorder the columns of tables_train[table_name] to be like in the metadata
             tables_train[table_name] = tables_train[table_name][list(fields.keys())]
