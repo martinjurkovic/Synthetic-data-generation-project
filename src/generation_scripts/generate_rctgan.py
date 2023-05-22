@@ -9,17 +9,20 @@ from rike import utils
 from rike.generation import sdv_metadata
 from rike import logging_config
 from rctgan import RCTGAN
+import torch
 
 # %%
-
 args = argparse.ArgumentParser()
 args.add_argument("--dataset-name", type=str, default="biodegradability")
+args.add_argument("--start_fold", type=int, default=0)
 args = args.parse_args()
 
 dataset_name = args.dataset_name
+start_fold = args.start_fold
 root_table_name = sdv_metadata.get_root_table(dataset_name)
 
 logger = logging_config.logger
+logger.error(f"CUDA: {torch.cuda.is_available()}")
 
 logger.error("START...")
 
@@ -28,7 +31,7 @@ CWD_PROJECT = os.getcwd().split(
 base_path = CWD_PROJECT + '/data/synthetic/' + dataset_name + '/RCTGAN/'
 
 # GENERATE SYNTHETIC DATA
-for k in tqdm.tqdm(range(10)):
+for k in tqdm.tqdm(range(start_fold, 10)):
     logger.error(f"STARTIG FOLD {k}!")
     model_save_path = f'models/rctgan/{dataset_name}/model_{k}.pickle'
     os.makedirs(os.path.dirname(model_save_path), exist_ok=True)

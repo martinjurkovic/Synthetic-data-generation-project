@@ -13,9 +13,13 @@ import wandb
 args = argparse.ArgumentParser()
 args.add_argument("--dataset-name", type=str, default="rossmann-store-sales")
 args.add_argument("--full_sensitivity", type=bool, default=True)
+args.add_argument("--start_fold", type=int, default=0)
+args.add_argument("--retrain", type=bool, default=True)
 args = args.parse_args()
 dataset_name = args.dataset_name
 full_sensitivity = args.full_sensitivity
+start_fold = args.start_fold
+retrain = args.retrain
 root_table_name = sdv_metadata.get_root_table(dataset_name)
 
 os.environ["WANDB_PROJECT"]=f"REALTABFORMER_{dataset_name}"
@@ -33,10 +37,9 @@ logger.info("START INFO...")
 
 batch_size_parent = 1024
 batch_size_child = 10
-retrain = True
 
 # GENERATE SYNTHETIC DATA
-for k in tqdm.tqdm(range(10)):
+for k in tqdm.tqdm(range(start_fold, 10)):
     logger.error("Generating synthetic data for %s, fold %d", dataset_name, k)
     synthetic_data = {}
     

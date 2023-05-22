@@ -2,7 +2,7 @@
 #SBATCH --job-name=RCT_ZUR
 #SBATCH --output=logs/sling-rctgan-zurich-%J.out
 #SBATCH --error=logs/sling-rctgan-zurich-%J.err
-#SBATCH --time=12:00:00 # job time limit - full format is D-H:M:S
+#SBATCH --time=2-00:00:00 # job time limit - full format is D-H:M:S
 #SBATCH --nodes=1 # number of nodes
 #SBATCH --gres=gpu:2 # number of gpus
 #SBATCH --ntasks=1 # number of tasks
