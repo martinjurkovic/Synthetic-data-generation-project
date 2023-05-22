@@ -37,12 +37,6 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
             dataset_name, leave_out_fold_num=k, synthetic=True, method_name=method_name, limit=limit)
         
         
-        # SDV cardinality shape similarity
-        if 'cardinality' in multi_table_metrics:
-            cardinality = cardinality_similarity(tables_orig_test,
-                            tables_synthetic_test,
-                            metadata)
-            
         # select the same amout of rows for original and synthetic tables
         # based on the number of rows in the root table
         root_table = sdv_metadata.get_root_table(dataset_name)
@@ -67,11 +61,18 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
                     tables_synthetic_test[table][field] = pd.to_datetime(tables_synthetic_test[table][field], format=values['format'])
                     tables_orig_train[table][field] = pd.to_datetime(tables_orig_train[table][field], format=values['format'])
                     tables_synthetic_train[table][field] = pd.to_datetime(tables_synthetic_train[table][field], format=values['format'])
-            # sort the columns of all tables
-            column_order = tables_orig_test[table].columns
-            tables_orig_train[table] = tables_orig_train[table].reindex(column_order, axis=1)
-            tables_synthetic_test[table] = tables_synthetic_test[table].reindex(column_order, axis=1)
-            tables_synthetic_train[table] = tables_synthetic_train[table].reindex(column_order, axis=1)
+            # make sure the columns are in the same order
+            orig_columns = tables_orig_test[table].columns
+            tables_synthetic_test[table] = tables_synthetic_test[table][orig_columns]
+            tables_synthetic_test[table].columns = orig_columns
+            tables_synthetic_train[table] = tables_synthetic_train[table][orig_columns]
+            tables_synthetic_train[table].columns = orig_columns
+
+        # SDV cardinality shape similarity
+        if 'cardinality' in multi_table_metrics:
+            cardinality = cardinality_similarity(tables_orig_test,
+                            tables_synthetic_test,
+                            metadata)
 
         # Multi table metrics
         for metric in multi_table_metrics:
@@ -84,7 +85,7 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
                                     metadata = metadata,
                                     root_table= sdv_metadata.get_root_table(dataset_name),
                                     save_path=f"metrics_report/{dataset_name}/{method_name}/{metric_name}/probabilities/multi_table_{k}.csv")
-            if metric_name not in metrics_report["metrics"]["multi_table"].keys():
+            if metric_name not in metrics_report["metrics"]["multi_table"].keys() or k == 0:
                 metrics_report["metrics"]["multi_table"][metric_name] = {
                     "scores": []}
             metrics_report["metrics"]["multi_table"][metric_name]["scores"].append(metric_value)
