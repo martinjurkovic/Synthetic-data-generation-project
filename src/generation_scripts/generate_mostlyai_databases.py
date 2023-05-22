@@ -24,8 +24,7 @@ connection = psycopg2.connect(host=os.environ.get('PG_HOST'),
                         port=os.environ.get('PG_PORT'),
                         user=os.environ.get('PG_USER'),
                         password=os.environ.get('PG_PASSWORD'),
-                        # dbname=args.dataset_name.split("-")[0],
-                        dbname='rossmann',
+                        dbname=args.dataset_name.split("-")[0],
                         sslmode='require')
 
 cursor = connection.cursor()
