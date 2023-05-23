@@ -136,3 +136,24 @@ def conditionally_sample(tables, metadata, root):
             tables = conditionally_sample(tables, metadata, child)
     return tables
 
+
+def add_number_of_children(table, metadata, tables):
+    parent = tables[table].copy()
+    children = metadata.get_children(table)
+    for child in children:
+        fks = metadata.get_foreign_keys(table, child)
+        child_pk = metadata.get_primary_key(child)
+        for fk in fks:
+            parent_fk = find_fk(table, fk, metadata)
+            if parent_fk is None:
+                continue
+            # count number of children for each parent row
+            num_children = tables[child].groupby(fk).count()[child_pk]
+            num_children = num_children.reset_index()
+            num_children.columns = [fk, f'{child}_count']
+            # join number of children to parent table
+            # where the parent id does not match set to 0
+            parent = parent.merge(num_children, left_on=parent_fk, right_on=fk, how='left')
+            parent[f'{child}_count'] = parent[f'{child}_count'].fillna(0)
+    return parent
+

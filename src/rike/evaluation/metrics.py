@@ -258,17 +258,17 @@ def xgboost_detection(original_test, synthetic_test, original_train, synthetic_t
 def discriminative_detection(original_test, synthetic_test, original_train, synthetic_train, clf=LogisticRegression(solver='lbfgs'), **kwargs):
     save_path = kwargs.get('save_path', None)
     metadata = kwargs.get('metadata', None)
-    synthetic_ids = synthetic_test.pop(metadata['primary_key'])
-    original_ids =  original_test.pop(metadata['primary_key'])
-    transformed_original_train = original_train
-    transformed_synthetic_train = synthetic_train
-    transformed_original_test = original_test
-    transformed_synthetic_test = synthetic_test
+    synthetic_ids = synthetic_test.get(metadata['primary_key'])
+    original_ids =  original_test.get(metadata['primary_key'])
+    transformed_original_train = original_train.copy()
+    transformed_synthetic_train = synthetic_train.copy()
+    transformed_original_test = original_test.copy()
+    transformed_synthetic_test = synthetic_test.copy()
     if metadata is not None and 'primary_key' in metadata:
         transformed_original_train = transformed_original_train.drop(metadata['primary_key'], axis=1)
         transformed_synthetic_train = transformed_synthetic_train.drop(metadata['primary_key'], axis=1)
-        #transformed_synthetic_test = synthetic_test.drop(metadata['primary_key'], axis=1)
-        #transformed_original_test = transformed_original_test.drop(metadata['primary_key'], axis=1)
+        transformed_synthetic_test = synthetic_test.drop(metadata['primary_key'], axis=1)
+        transformed_original_test = transformed_original_test.drop(metadata['primary_key'], axis=1)
     
 
     ht = HyperTransformer()
