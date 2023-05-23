@@ -19,17 +19,17 @@ def get_root_table(dataset_name):
 
 def generate_metadata(dataset_name, original_data, save=False):
     if dataset_name == "biodegradability":
-        return generate_biodegradability_metadata(dataset_name, original_data, save_metadata)
+        return generate_biodegradability_metadata(dataset_name, original_data, save)
     if dataset_name == "rossmann-store-sales":
-        return generate_rossman_metadata(dataset_name, original_data, save_metadata)
+        return generate_rossman_metadata(dataset_name, original_data, save)
     if dataset_name == "mutagenesis":
-        return generate_mutagenesis_metadata(dataset_name, original_data, save_metadata)
+        return generate_mutagenesis_metadata(dataset_name, original_data, save)
     if dataset_name == "coupon-purchase-prediction":
-        return generate_coupon_metadata(dataset_name, original_data, save_metadata)
+        return generate_coupon_metadata(dataset_name, original_data, save)
     if dataset_name == "telstra-competition-dataset":
-        return generate_telstra_metadata(dataset_name, original_data, save_metadata)
+        return generate_telstra_metadata(dataset_name, original_data, save)
     if dataset_name == "zurich":
-        return generate_zurich_metadata(dataset_name, original_data, save_metadata)
+        return generate_zurich_metadata(dataset_name, original_data, save)
     raise ValueError(f"Dataset {dataset_name} not supported")
 
 

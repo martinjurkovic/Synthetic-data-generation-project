@@ -12,7 +12,7 @@ from rike.evaluation.report import generate_report
 
 args = argparse.ArgumentParser()
 args.add_argument("--dataset-name", type=str, default="rossmann-store-sales")
-args.add_argument("--method", type=str, default="gretel")
+args.add_argument("--method", type=str, default="SDV")
 args.add_argument("--limit", type=int, default=10)
 args, unknown = args.parse_known_args()
 
@@ -20,9 +20,9 @@ args, unknown = args.parse_known_args()
 # %%
 single_table_metrics = [
                         #ks_test,
-                        #logistic_detection,
+                        logistic_detection,
                         random_forest_detection,
-                        #svm_detection,
+                        svm_detection,
                         knn_detection,
                         xgboost_detection,
                         mlp_detection,
@@ -32,7 +32,7 @@ single_table_metrics = [
                         ]
 
 multi_table_metrics = [
-                        'cardinality',
+                        # 'cardinality',
                         parent_child_xgb_detection,
                         parent_child_logistic_detection,
                       ]

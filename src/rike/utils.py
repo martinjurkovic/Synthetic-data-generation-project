@@ -8,7 +8,7 @@ CWD_PROJECT = os.getcwd().split(
     'Synthetic-data-generation-project')[0] + 'Synthetic-data-generation-project'
 
 
-def read_tables(dataset_name, leave_out_fold_num, type, split_by="_", name_index=1, limit=None, synthetic=False, method_name=None, **kwargs):
+def read_tables(dataset_name, leave_out_fold_num, type, split_by="_", name_index=1, limit=None, synthetic=False, method_name=None, metadata = None, **kwargs):
     highest_fold = 99999
     if limit is not None:
         highest_fold = limit
@@ -33,13 +33,18 @@ def read_tables(dataset_name, leave_out_fold_num, type, split_by="_", name_index
                     break
 
             fold = file[:-4].split(split_by)[-1]
+            # TODO: refactor to function
             if fold == str(leave_out_fold_num) and type == "test":
                 table = pd.read_csv(
                     path + f'{"/" if path[-1] != "/" else ""}' + file, **kwargs)
+                if metadata is not None:
+                    table = add_fold_index_to_keys(fold, table_name, table, metadata)
                 tables[table_name] = table
             elif fold != str(leave_out_fold_num) and type == "train" and int(fold) < highest_fold:
                 table = pd.read_csv(
                     path + f'{"/" if path[-1] != "/" else ""}' + file, **kwargs)
+                if metadata is not None:
+                    table = add_fold_index_to_keys(fold, table_name, table, metadata)
                 if table_name not in tables:
                     tables[table_name] = table
                 else:
@@ -47,20 +52,20 @@ def read_tables(dataset_name, leave_out_fold_num, type, split_by="_", name_index
     return tables
 
 
-def get_train_test_split(dataset_name, leave_out_fold_num, limit=None, synthetic=False, method_name = None):
-    tables_train = read_tables(dataset_name, leave_out_fold_num, "train", limit=limit, synthetic=synthetic, method_name=method_name)
-    tables_test = read_tables(dataset_name, leave_out_fold_num, "test", limit=limit, synthetic=synthetic, method_name=method_name)
-    # add _{k} to all primary and foreign keys to ensure uniqueness among folds
-    metadata = sdv_metadata.generate_metadata(dataset_name, tables_train)
-    for table in metadata.get_tables():
-        pk = metadata.get_primary_key(table)
-        keys = [pk]
-        for parent in metadata.get_parents(table):
-            fks = metadata.get_foreign_keys(parent, table)
-            keys += fks
-        for key in keys:
-            tables_test[table][key] = tables_test[table][key].astype(str) + "_" + str(leave_out_fold_num)
+def get_train_test_split(dataset_name, leave_out_fold_num, limit=None, synthetic=False, method_name = None, metadata = None):
+    tables_train = read_tables(dataset_name, leave_out_fold_num, "train", limit=limit, synthetic=synthetic, method_name=method_name, metadata=metadata)
+    tables_test = read_tables(dataset_name, leave_out_fold_num, "test", limit=limit, synthetic=synthetic, method_name=method_name, metadata=metadata)
     return tables_train, tables_test
+
+def add_fold_index_to_keys(leave_out_fold_num, table_name, table, metadata):
+    pk = metadata.get_primary_key(table_name)
+    keys = [pk]
+    for parent in metadata.get_parents(table_name):
+        fks = metadata.get_foreign_keys(parent, table_name)
+        keys += fks
+    for key in keys:
+        table[key] = table[key].astype(str) + "_" + str(leave_out_fold_num)
+    return table
 
 
 def save_train_test_split(dataset_name, leave_out_fold_num, tables_train, tables_test):

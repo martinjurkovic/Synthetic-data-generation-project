@@ -54,9 +54,9 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
 
     for k in tqdm(range(min(10, limit))):
         tables_orig_train, tables_orig_test = get_train_test_split(
-            dataset_name, leave_out_fold_num=k, synthetic=False, limit=limit)
+            dataset_name, leave_out_fold_num=k, synthetic=False, limit=limit, metadata=metadata)
         tables_synthetic_train, tables_synthetic_test = get_train_test_split(
-            dataset_name, leave_out_fold_num=k, synthetic=True, method_name=method_name, limit=limit)
+            dataset_name, leave_out_fold_num=k, synthetic=True, method_name=method_name, limit=limit, metadata=metadata)
         
         
         # select the same amout of rows for original and synthetic tables

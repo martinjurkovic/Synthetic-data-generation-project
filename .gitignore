@@ -12,7 +12,7 @@ reports/*.pkl
 
 src/generation_scripts/mar*
 mj5*/
-
+valt*/
 logs
 rtf_checkpoints
 wandb
