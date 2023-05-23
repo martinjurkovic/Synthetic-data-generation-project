@@ -31,6 +31,9 @@ def get_frequency(
     res = {}
     for col in original.columns:
         local_bins = min(nbins, len(original[col].unique()))
+        if "datetime" in str(original[col].dtype):
+            original[col] = original[col].astype("int64")
+            synthetic[col] = synthetic[col].astype("int64") 
 
         if len(original[col].unique()) < 5:  # categorical
             gt = (original[col].value_counts() / len(original)).to_dict()
@@ -61,7 +64,13 @@ def ks_test(original, synthetic, **kwargs):
     """
     res = []
     for col in original.columns:
-        statistic, _ = ks_2samp(original[col], synthetic[col])
+        if original[col].dtype == "object":
+            continue
+        orig = original[col]
+        synth = synthetic[col]
+        orig = orig[~orig.isna()].values
+        synth = synth[~synth.isna()].values
+        statistic, _ = ks_2samp(orig, synth)
         res.append(1 - statistic)
 
     return np.mean(res)
@@ -71,12 +80,20 @@ def chisquare_test(original, synthetic, nbins=10, **kwargs):
     """
     Calculate the Chi-Square test.
     """
+    metadata = kwargs.get("metadata", None)
+
     res = []
+    orig = original.copy().dropna()
+    synth = synthetic.copy().dropna()
+
+    orig.drop(metadata['primary_key'], axis=1, inplace=True)
+    synth.drop(metadata['primary_key'], axis=1, inplace=True)
+
     freqs = get_frequency(
-        original, synthetic, nbins=nbins
+        orig, synth, nbins=nbins
     )
 
-    for col in original.columns:
+    for col in orig.columns:
         gt_freq, synth_freq = freqs[col]
         try:
             _, pvalue = chisquare(gt_freq, synth_freq)
@@ -93,11 +110,27 @@ def js_divergence(original, synthetic, nbins=10, normalize=False, **kwargs):
     stats_gt = {}
     stats_syn = {}
     stats = {}
+    metadata = kwargs.get("metadata", None)
 
-    for col in original.columns:
-        local_bins = min(nbins, len(original[col].unique()))
-        original_bin, gt_bins = pd.cut(original[col], bins=local_bins, retbins=True)
-        synthetic_bin = pd.cut(synthetic[col], bins=gt_bins)
+    orig = original.copy().dropna()
+    synth = synthetic.copy().dropna()
+
+    orig.drop(metadata['primary_key'], axis=1, inplace=True)
+    synth.drop(metadata['primary_key'], axis=1, inplace=True)
+
+
+    for col in orig.columns:
+        if orig[col].dtype == "object":
+            continue
+        if "datetime" in str(orig[col].dtype):
+            orig[col] = orig[col].astype("int64")
+            synth[col] = synth[col].astype("int64")
+            maximum = orig[col].max()
+            orig[col] = orig[col] / maximum
+            synth[col] = synth[col] / maximum
+        local_bins = min(nbins, len(orig[col].unique()))
+        original_bin, gt_bins = pd.cut(orig[col], bins=local_bins, retbins=True)
+        synthetic_bin = pd.cut(synth[col], bins=gt_bins)
         stats_gt[col], stats_syn[col] = original_bin.value_counts(
             dropna=False, normalize=normalize
         ).align(
@@ -117,12 +150,31 @@ def js_divergence(original, synthetic, nbins=10, normalize=False, **kwargs):
 
 
 def mean_max_discrepency(original, synthetic, kernel='linear', nbins=10, **kwargs):
+    # preprocess the values
+    metadata = kwargs.get("metadata", None)
+    orig = original.copy()
+    synth = synthetic.copy()
+
+    orig.drop(metadata['primary_key'], axis=1, inplace=True)
+    synth.drop(metadata['primary_key'], axis=1, inplace=True)
+    for col in orig.columns:
+        if orig[col].dtype == "object":
+            orig.drop(col, axis=1, inplace=True)
+            synth.drop(col, axis=1, inplace=True)
+        elif "datetime" in str(orig[col].dtype):
+            orig[col] = orig[col].astype("int64")
+            synth[col] = synth[col].astype("int64")
+            maximum = orig[col].max()
+            orig[col] = orig[col] / maximum
+            synth[col] = synth[col] / maximum
+
+    
     if kernel == "linear":
         """
         MMD using linear kernel (i.e., k(x,y) = <x,y>)
         """
-        delta_df = original.mean(axis=0) - synthetic.mean(axis=0)
-        delta = delta_df.values
+        delta = orig.mean(axis=0) - synth.mean(axis=0)
+        #delta = delta_df.values
 
         score = delta.dot(delta.T)
     elif kernel == "rbf":
@@ -131,18 +183,18 @@ def mean_max_discrepency(original, synthetic, kernel='linear', nbins=10, **kwarg
         """
         gamma = 1.0
         XX = metrics.pairwise.rbf_kernel(
-            original.numpy().reshape(len(original), -1),
-            original.numpy().reshape(len(original), -1),
+            orig.reshape(len(original), -1),
+            synth.reshape(len(original), -1),
             gamma,
         )
         YY = metrics.pairwise.rbf_kernel(
-            synthetic.numpy().reshape(len(synthetic), -1),
-            synthetic.numpy().reshape(len(synthetic), -1),
+            synth.reshape(len(synthetic), -1),
+            synth.reshape(len(synthetic), -1),
             gamma,
         )
         XY = metrics.pairwise.rbf_kernel(
-            original.numpy().reshape(len(original), -1),
-            synthetic.numpy().reshape(len(synthetic), -1),
+            orig.reshape(len(original), -1),
+            synth.reshape(len(synthetic), -1),
             gamma,
         )
         score = XX.mean() + YY.mean() - 2 * XY.mean()
@@ -154,22 +206,22 @@ def mean_max_discrepency(original, synthetic, kernel='linear', nbins=10, **kwarg
         gamma = 1
         coef0 = 0
         XX = metrics.pairwise.polynomial_kernel(
-            original.numpy().reshape(len(original), -1),
-            original.numpy().reshape(len(original), -1),
+            orig.reshape(len(original), -1),
+            orig.reshape(len(original), -1),
             degree,
             gamma,
             coef0,
         )
         YY = metrics.pairwise.polynomial_kernel(
-            synthetic.numpy().reshape(len(synthetic), -1),
-            synthetic.numpy().reshape(len(synthetic), -1),
+            synth.numpy().reshape(len(synthetic), -1),
+            synth.numpy().reshape(len(synthetic), -1),
             degree,
             gamma,
             coef0,
         )
         XY = metrics.pairwise.polynomial_kernel(
-            original.numpy().reshape(len(original), -1),
-            synthetic.numpy().reshape(len(synthetic), -1),
+            orig.reshape(len(original), -1),
+            synth.numpy().reshape(len(synthetic), -1),
             degree,
             gamma,
             coef0,
