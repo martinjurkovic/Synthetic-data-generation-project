@@ -1,0 +1,6 @@
+# everything that is not a json file
+biodegradability
+mutagenesis
+rossmann-store-sales
+telstra-competition-dataset
+!*.json
