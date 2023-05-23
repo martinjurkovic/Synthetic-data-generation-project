@@ -32,7 +32,6 @@ def add_metric(results, metric_name, metric_value, k=0, table_name= None, multi_
     return results
 
 
-
 def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], multi_table_metrics = ['cardinality'], save_report=False, limit=10):
     # read metrics_report from file
     if os.path.exists(f"metrics_report/{dataset_name}_{method_name}.json"):
@@ -62,6 +61,7 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
         
         # select the same amout of rows for original and synthetic tables
         # based on the number of rows in the root table
+        # TODO: refactor to a function
         root_table = sdv_metadata.get_root_table(dataset_name)
         # train
         nrows = min(tables_orig_test[root_table].shape[0], tables_synthetic_test[root_table].shape[0])
@@ -76,6 +76,7 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
         tables_synthetic_test = conditionally_sample(tables_synthetic_test, metadata, root_table)
         tables_orig_test = conditionally_sample(tables_orig_test, metadata, root_table)
             
+
         original_train_children = {}
         synthetic_train_children = {}
         original_test_children = {}
@@ -100,7 +101,6 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
             synthetic_train_children[table] = add_number_of_children(table, metadata, tables_synthetic_train)
             original_test_children[table] = add_number_of_children(table, metadata, tables_orig_test)
             synthetic_test_children[table] = add_number_of_children(table, metadata, tables_synthetic_test)
-        # Add number of children to metadata
 
 
         # SDV cardinality shape similarity
@@ -122,15 +122,14 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
                                     save_path=f"metrics_report/{dataset_name}/{method_name}/{metric_name}/probabilities/multi_table_{k}.csv")
             metrics_report = add_metric(metrics_report, metric_name, metric_value, k = k, multi_table=True)
 
-            if len(metadata.get_children(table_name)) > 0:
-                metric_with_children = metric.__name__ + '_with_children'
-                metric_value_with_children = metric(original_test_children, synthetic_test_children,
-                                        original_train=original_train_children, 
-                                        synthetic_train=synthetic_train_children, 
-                                        metadata = metadata,
-                                        root_table= sdv_metadata.get_root_table(dataset_name),
-                                        save_path=f"metrics_report/{dataset_name}/{method_name}/{metric_name}/probabilities/multi_table_{k}.csv")
-                metrics_report = add_metric(metrics_report, metric_with_children, metric_value_with_children, k = k, multi_table=True)
+            metric_with_children = metric.__name__ + '_with_children'
+            metric_value_with_children = metric(original_test_children, synthetic_test_children,
+                                    original_train=original_train_children, 
+                                    synthetic_train=synthetic_train_children, 
+                                    metadata = metadata,
+                                    root_table= sdv_metadata.get_root_table(dataset_name),
+                                    save_path=f"metrics_report/{dataset_name}/{method_name}/{metric_name}/probabilities/multi_table_{k}.csv")
+            metrics_report = add_metric(metrics_report, metric_with_children, metric_value_with_children, k = k, multi_table=True)
 
         # Remove foreign key columns
         for table, fields in metadata.to_dict()['tables'].items():
@@ -159,7 +158,7 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
                                             original_train=original_train_children[table_name], 
                                             synthetic_train=synthetic_train_children[table_name], 
                                             metadata = metadata.to_dict()['tables'][table_name],
-                                            save_path=f"metrics_report/{dataset_name}/{method_name}/{metric_name}/probabilities/{table_name}_{k}.csv")
+                                            save_path=f"metrics_report/{dataset_name}/{method_name}/{metric_with_children}/probabilities/{table_name}_{k}.csv")
                     metrics_report = add_metric(metrics_report, metric_with_children, metric_value_with_children, table_name=table_name, k = k)
                 
                 
@@ -187,6 +186,6 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
             
     if save_report:
         with open(f"metrics_report/{dataset_name}_{method_name}.json", "w") as f:
-            json.dump(metrics_report, f, indent=4)
+            json.dump(metrics_report, f, indent=4, sort_keys=True)
     
     return metrics_report

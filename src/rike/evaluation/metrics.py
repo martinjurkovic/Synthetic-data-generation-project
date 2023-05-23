@@ -305,18 +305,44 @@ def discriminative_detection(original_test, synthetic_test, original_train, synt
         df.to_csv(save_path, index=False)
 
         # save feature importance
-        feature_importance_path = save_path.replace('probabilities', 'feature_importance')
-        os.makedirs(os.path.dirname(feature_importance_path), exist_ok=True)
-        df = pd.DataFrame({
-            'feature': columns,
-            'importance': clf.feature_importances_
-        })
-        df.sort_values(by='importance', ascending=False, inplace=True)
-        df.to_csv(feature_importance_path, index=False)
+        if hasattr(clf, 'feature_importances_'):
+            feature_importance_path = save_path.replace('probabilities', 'feature_importance')
+            os.makedirs(os.path.dirname(feature_importance_path), exist_ok=True)
+            df = pd.DataFrame({
+                'feature': columns,
+                'importance': clf.feature_importances_
+            })
+            df.sort_values(by='importance', ascending=False, inplace=True)
+            df.to_csv(feature_importance_path, index=False)
     return accuracy_score(y_test, y_pred)
 
+
+def parent_child_logistic_detection(original_test, synthetic_test, original_train, synthetic_train, **kwargs):
+    return parent_child_discriminative_detection(original_test, synthetic_test, original_train, synthetic_train, clf=LogisticRegression(solver='lbfgs'), **kwargs)
+
+
+def parent_child_random_forest_detection(original_test, synthetic_test, original_train, synthetic_train, **kwargs):
+    return parent_child_discriminative_detection(original_test, synthetic_test, original_train, synthetic_train, clf=RandomForestClassifier(), **kwargs)
+
+
+def parent_child_knn_detection(original_test, synthetic_test, original_train, synthetic_train, **kwargs):
+    return parent_child_discriminative_detection(original_test, synthetic_test, original_train, synthetic_train, clf=KNeighborsClassifier(), **kwargs)
+
+
+def parent_child_mlp_detection(original_test, synthetic_test, original_train, synthetic_train, **kwargs):
+    hidden_layer_sizes = kwargs.get('hidden_layer_sizes', (100, ))
+    return parent_child_discriminative_detection(original_test, synthetic_test, original_train, synthetic_train, clf=MLPClassifier(hidden_layer_sizes=hidden_layer_sizes), **kwargs)
+
+
+def parent_child_svm_detection(original_test, synthetic_test, original_train, synthetic_train, **kwargs):
+    return parent_child_discriminative_detection(original_test, synthetic_test, original_train, synthetic_train, clf=SVC(probability=True), **kwargs)
+
+
+def parent_child_xgb_detection(original_test, synthetic_test, original_train, synthetic_train, **kwargs):
+    return parent_child_discriminative_detection(original_test, synthetic_test, original_train, synthetic_train, clf=xgb.XGBClassifier(), **kwargs)
+
    
-def parent_child_discriminative_detection(original_test, synthetic_test, original_train, synthetic_train, clf=xgb.XGBClassifier(), **kwargs):
+def parent_child_discriminative_detection(original_test, synthetic_test, original_train, synthetic_train, clf=LogisticRegression(solver='lbfgs'), **kwargs):
     metadata = kwargs.get('metadata', None)
     root_table = kwargs.get('root_table', None)
     # join parent and child tables based on the metadata

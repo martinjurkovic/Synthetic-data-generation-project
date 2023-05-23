@@ -2,6 +2,8 @@ import os
 import pandas as pd
 import re
 
+from rike.generation import sdv_metadata
+
 CWD_PROJECT = os.getcwd().split(
     'Synthetic-data-generation-project')[0] + 'Synthetic-data-generation-project'
 
@@ -48,6 +50,16 @@ def read_tables(dataset_name, leave_out_fold_num, type, split_by="_", name_index
 def get_train_test_split(dataset_name, leave_out_fold_num, limit=None, synthetic=False, method_name = None):
     tables_train = read_tables(dataset_name, leave_out_fold_num, "train", limit=limit, synthetic=synthetic, method_name=method_name)
     tables_test = read_tables(dataset_name, leave_out_fold_num, "test", limit=limit, synthetic=synthetic, method_name=method_name)
+    # add _{k} to all primary and foreign keys to ensure uniqueness among folds
+    metadata = sdv_metadata.generate_metadata(dataset_name, tables_train)
+    for table in metadata.get_tables():
+        pk = metadata.get_primary_key(table)
+        keys = [pk]
+        for parent in metadata.get_parents(table):
+            fks = metadata.get_foreign_keys(parent, table)
+            keys += fks
+        for key in keys:
+            tables_test[table][key] = tables_test[table][key].astype(str) + "_" + str(leave_out_fold_num)
     return tables_train, tables_test
 
 
@@ -141,6 +153,7 @@ def add_number_of_children(table, metadata, tables):
     parent = tables[table].copy()
     children = metadata.get_children(table)
     for child in children:
+        child_table = add_number_of_children(child, metadata, tables)
         fks = metadata.get_foreign_keys(table, child)
         child_pk = metadata.get_primary_key(child)
         for fk in fks:
@@ -148,7 +161,7 @@ def add_number_of_children(table, metadata, tables):
             if parent_fk is None:
                 continue
             # count number of children for each parent row
-            num_children = tables[child].groupby(fk).count()[child_pk]
+            num_children = child_table.groupby(fk).count()[child_pk]
             num_children = num_children.reset_index()
             num_children.columns = [fk, f'{child}_count']
             # join number of children to parent table
