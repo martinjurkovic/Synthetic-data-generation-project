@@ -7,14 +7,19 @@ from rike.evaluation.metrics import (ks_test, chisquare_test, mean_max_discrepen
                                      svm_detection, knn_detection, mlp_detection, xgboost_detection,
                                      parent_child_logistic_detection, parent_child_xgb_detection)
 from rike.evaluation.report import generate_report
+from rike.utils import get_highest_fold
 
 
 
 args = argparse.ArgumentParser()
 args.add_argument("--dataset-name", type=str, default="rossmann-store-sales")
-args.add_argument("--method", type=str, default="SDV")
-args.add_argument("--limit", type=int, default=10)
+args.add_argument("--method", type=str, default="mostlyai")
+args.add_argument("--limit", type=int, default=-1)
 args, unknown = args.parse_known_args()
+
+limit = args.limit
+if limit == -1:
+    limit = get_highest_fold(args.dataset_name, args.method) + 1
 
 
 # %%
@@ -42,8 +47,8 @@ report = generate_report(args.dataset_name, args.method,
                          single_table_metrics=single_table_metrics, 
                          multi_table_metrics=multi_table_metrics,
                          save_report=True,
-                         limit=args.limit)
+                         limit=limit)
 # print formatted report dict
-print(json.dumps(report, indent=4))
+print(json.dumps(report, indent=4, sort_keys=True))
 
 # %%

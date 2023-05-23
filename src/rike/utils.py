@@ -7,6 +7,16 @@ from rike.generation import sdv_metadata
 CWD_PROJECT = os.getcwd().split(
     'Synthetic-data-generation-project')[0] + 'Synthetic-data-generation-project'
 
+def get_highest_fold(dataset_name, method_name):
+    path = os.path.join(CWD_PROJECT, 'data', 'synthetic', dataset_name, method_name)
+    highest_fold = 0
+    for file in os.listdir(path):
+        if file.endswith(".csv"):
+            table_split = file[:-4].split("_fold_")
+            fold = int(table_split[1])
+            if fold > highest_fold:
+                highest_fold = fold
+    return highest_fold
 
 def read_tables(dataset_name, leave_out_fold_num, type, split_by="_", name_index=1, limit=None, synthetic=False, method_name=None, metadata = None, **kwargs):
     highest_fold = 99999
