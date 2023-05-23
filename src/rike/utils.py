@@ -180,8 +180,25 @@ def add_number_of_children(table, metadata, tables):
             num_children = num_children.reset_index()
             num_children.columns = [fk, f'{child}_count']
             # join number of children to parent table
-            # where the parent id does not match set to 0
             parent = parent.merge(num_children, left_on=parent_fk, right_on=fk, how='left')
-            parent[f'{child}_count'] = parent[f'{child}_count'].fillna(0)
+
+            # aggregate the number of grandchildren
+            for column in child_table.columns:
+                if f'_count' in column:
+                    # add sum of grandchildren
+                    num_grandchildren = child_table.groupby(fk).sum(numeric_only=True)[column]
+                    num_grandchildren = num_grandchildren.reset_index()
+                    num_grandchildren.columns = [fk, f'grandchildren_sum_{column}']
+                    parent = parent.merge(num_grandchildren, left_on=parent_fk, right_on=fk, how='left')
+                    # add mean of grandchildren
+                    mean_grandchildren = child_table.groupby(fk).mean(numeric_only=True)[column]
+                    mean_grandchildren = mean_grandchildren.reset_index()
+                    mean_grandchildren.columns = [fk, f'grandchildren_mean_{column}']
+                    parent = parent.merge(mean_grandchildren, left_on=parent_fk, right_on=fk, how='left')
+        
+        # where the parent id does not match set to 0
+        for column in parent.columns:
+            if f'{child}_count' in column:
+                parent[column] = parent[column].fillna(0)
     return parent
 

@@ -135,10 +135,17 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
         for table, fields in metadata.to_dict()['tables'].items():
             for field, values in fields['fields'].items():
                 if 'ref' in values.keys():
+                    # remove foreign keys for each table
                     tables_orig_test[table].drop(columns=[field], inplace=True)
                     tables_synthetic_test[table].drop(columns=[field], inplace=True)
                     tables_orig_train[table].drop(columns=[field], inplace=True)
                     tables_synthetic_train[table].drop(columns=[field], inplace=True)
+                    # remove foreign keys for each table with children
+                    original_train_children[table].drop(columns=[field], inplace=True)
+                    synthetic_train_children[table].drop(columns=[field], inplace=True)
+                    original_test_children[table].drop(columns=[field], inplace=True)
+                    synthetic_test_children[table].drop(columns=[field], inplace=True)
+                    
 
         # Single table metrics
         for table_name in tables_orig_test.keys():

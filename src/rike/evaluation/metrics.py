@@ -16,6 +16,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
 import xgboost as xgb
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 
 from rike.utils import merge_children
 
@@ -342,8 +344,13 @@ def discriminative_detection(original_test, synthetic_test, original_train, synt
         np.ones(len(transformed_original_test)), np.zeros(len(transformed_synthetic_test))
     ])
 
-    clf = clf.fit(X_train, y_train)
-    probs = clf.predict_proba(X_test)
+    model = Pipeline([
+        ('scaler', StandardScaler()),
+        ('clf', clf)
+    ])
+
+    model.fit(X_train, y_train)
+    probs = model.predict_proba(X_test)
     y_pred = probs.argmax(axis=1)
     if save_path is not None:
         # save probabilities
@@ -357,6 +364,7 @@ def discriminative_detection(original_test, synthetic_test, original_train, synt
         df.to_csv(save_path, index=False)
 
         # save feature importance
+        # TODO: convert to wrapper
         if hasattr(clf, 'feature_importances_'):
             feature_importance_path = save_path.replace('probabilities', 'feature_importance')
             os.makedirs(os.path.dirname(feature_importance_path), exist_ok=True)
@@ -443,8 +451,14 @@ def parent_child_discriminative_detection(original_test, synthetic_test, origina
     y_test = np.hstack([
         np.ones(len(transformed_original_test)), np.zeros(len(transformed_synthetic_test))
     ])
+    # construct the model pipeline
+    # with standard scaler
+    model = Pipeline([
+        ('scaler', StandardScaler()),
+        ('clf', clf)
+    ])
 
-    clf = clf.fit(X_train, y_train)
-    probs = clf.predict_proba(X_test)
+    model.fit(X_train, y_train)
+    probs = model.predict_proba(X_test)
     y_pred = probs.argmax(axis=1)
     return accuracy_score(y_test, y_pred)
