@@ -22,7 +22,19 @@ def get_highest_fold(dataset_name, method_name, evaluation=False):
                 highest_fold = fold
     return highest_fold
 
-def read_tables(dataset_name, leave_out_fold_num, type, split_by="_", name_index=1, limit=None, synthetic=False, method_name=None, metadata = None, evaluation = False, delta = 1, **kwargs):
+def read_tables(dataset_name, 
+                leave_out_fold_num, 
+                type, 
+                split_by="_", 
+                name_index=1, 
+                limit=None, 
+                synthetic=False, 
+                method_name=None, 
+                metadata = None, 
+                evaluation = False, 
+                delta = 1, 
+                add_indexes = True,
+                **kwargs):
     highest_fold = 99999
     if limit is not None:
         highest_fold = limit
@@ -51,13 +63,13 @@ def read_tables(dataset_name, leave_out_fold_num, type, split_by="_", name_index
             if fold == str(leave_out_fold_num) and type == "test":
                 table = pd.read_csv(
                     path + f'{"/" if path[-1] != "/" else ""}' + file, **kwargs)
-                # if metadata is not None:
-                #     table = add_fold_index_to_keys(fold, table_name, table, metadata)
+                if metadata is not None and add_indexes:
+                    table = add_fold_index_to_keys(fold, table_name, table, metadata)
                 tables[table_name] = table
             elif not evaluation and fold != str(leave_out_fold_num) and type == "train" and int(fold) < highest_fold:
                 table = pd.read_csv(
                     path + f'{"/" if path[-1] != "/" else ""}' + file, **kwargs)
-                if metadata is not None:
+                if metadata is not None and add_indexes:
                     table = add_fold_index_to_keys(fold, table_name, table, metadata)
                 if table_name not in tables:
                     tables[table_name] = table
@@ -66,9 +78,13 @@ def read_tables(dataset_name, leave_out_fold_num, type, split_by="_", name_index
             elif evaluation and fold == (int(leave_out_fold_num) + delta) % 10 and type == "train" and int(fold) < highest_fold:
                 table = pd.read_csv(
                     path + f'{"/" if path[-1] != "/" else ""}' + file, **kwargs)
-                # if metadata is not None:
-                #     table = add_fold_index_to_keys(fold, table_name, table, metadata)
+                if metadata is not None and add_indexes:
+                    table = add_fold_index_to_keys(fold, table_name, table, metadata)
                 tables[table_name] = table
+
+    # for every table in tables, drop duplicate rows
+    for table_name, table in tables.items():
+        tables[table_name] = table.drop_duplicates()
 
     return tables
 
