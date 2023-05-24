@@ -11,9 +11,9 @@ import pandas as pd
 # for table in original_data:
 #     print(original_data[table].info())
 
-original_data['customers'] = original_data['customers'].dropna()
-original_data['claims'] = original_data['claims'].dropna()
-original_data['policies'] = original_data['policies'].dropna()
+# original_data['customers'] = original_data['customers'].dropna()
+# original_data['claims'] = original_data['claims'].dropna()
+# original_data['policies'] = original_data['policies'].dropna()
 
 # convert the datetime columns to datetime type
 original_data['customers']['date_of_birth'] = pd.to_datetime(original_data['customers']['date_of_birth'])
@@ -25,20 +25,20 @@ original_data['policies']['cancellation_or_end_date'] = pd.to_datetime(original_
 original_data['policies']['first_end_date'] = pd.to_datetime(original_data['policies']['first_end_date'])
 
 # convert int64 columns to int32
-for column in original_data['customers'].columns:
-    if original_data['customers'][column].dtype == 'int64':
-        original_data['customers'][column] = original_data['customers'][column].astype('int32')
-for column in original_data['claims'].columns:
-    if original_data['claims'][column].dtype == 'int64':
-        original_data['claims'][column] = original_data['claims'][column].astype('int32')
-for column in original_data['policies'].columns:
-    if original_data['policies'][column].dtype == 'int64':
-        original_data['policies'][column] = original_data['policies'][column].astype('int32')
+# for column in original_data['customers'].columns:
+#     if original_data['customers'][column].dtype == 'int64':
+#         original_data['customers'][column] = original_data['customers'][column].astype('int32')
+# for column in original_data['claims'].columns:
+#     if original_data['claims'][column].dtype == 'int64':
+#         original_data['claims'][column] = original_data['claims'][column].astype('int32')
+# for column in original_data['policies'].columns:
+#     if original_data['policies'][column].dtype == 'int64':
+#         original_data['policies'][column] = original_data['policies'][column].astype('int32')
 
-original_data['policies']['customer_id'] = original_data['policies']['customer_id'].astype('int32')
+# original_data['policies']['customer_id'] = original_data['policies']['customer_id'].astype('int32')
 
-original_data['customers'] = original_data['customers'][original_data['customers']['customer_id'].isin(original_data['policies']['customer_id'])]
-original_data['claims'] = original_data['claims'][original_data['claims']['policy_id'].isin(original_data['policies']['policy_id'])]
+# original_data['customers'] = original_data['customers'][original_data['customers']['customer_id'].isin(original_data['policies']['customer_id'])]
+# original_data['claims'] = original_data['claims'][original_data['claims']['policy_id'].isin(original_data['policies']['policy_id'])]
 
 # for table in original_data:
 #     print(original_data[table].info())
