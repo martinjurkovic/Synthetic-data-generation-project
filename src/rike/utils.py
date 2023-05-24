@@ -75,7 +75,7 @@ def read_tables(dataset_name,
                     tables[table_name] = table
                 else:
                     tables[table_name] = pd.concat([tables[table_name], table])
-            elif evaluation and fold == (int(leave_out_fold_num) + delta) % 10 and type == "train" and int(fold) < highest_fold:
+            elif evaluation and fold == (int(leave_out_fold_num) + delta) % highest_fold and type == "train" and int(fold) < highest_fold:
                 table = pd.read_csv(
                     path + f'{"/" if path[-1] != "/" else ""}' + file, **kwargs)
                 if metadata is not None and add_indexes:
