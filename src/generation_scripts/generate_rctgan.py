@@ -42,6 +42,8 @@ for k in tqdm.tqdm(range(start_fold, limit)):
     model_save_path = f'models/rctgan/{dataset_name}/model_{k}.pickle'
     os.makedirs(os.path.dirname(model_save_path), exist_ok=True)
     tables_train, tables_test = utils.get_train_test_split(dataset_name, k)
+    if dataset_name == "zurich_mle":
+        tables_train = tables_test.copy()
     metadata = sdv_metadata.generate_metadata(dataset_name, tables_train)
 
     assert root_table_name in metadata.to_dict()['tables'].keys(), \
