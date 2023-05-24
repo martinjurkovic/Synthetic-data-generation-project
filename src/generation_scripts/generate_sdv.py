@@ -11,7 +11,8 @@ from rike import logging_config
 logger = logging_config.logger
 
 args = argparse.ArgumentParser()
-args.add_argument("--dataset-name", type=str, default="rossmann-store-sales")
+args.add_argument("--dataset-name", type=str, default="zurich_mle")
+args.add_argument("--start_fold", type=int, default=0)
 args.add_argument("--limit", type=int, default=-1)
 args = args.parse_args()
 
@@ -20,16 +21,17 @@ if limit == -1:
     limit = utils.get_highest_fold(args.dataset_name, "SDV") + 1
 
 dataset_name = args.dataset_name
-limit = args.limit
 root_table_name = sdv_metadata.get_root_table(dataset_name)
 
 # %%
 # GENERATE SYNTHETIC DATA
-for k in tqdm.tqdm(range(limit)):
+for k in tqdm.tqdm(range(args.start_fold, limit)):
     model_save_path = f'models/sdv/{dataset_name}/model_{k}.pickle'
     os.makedirs(os.path.dirname(model_save_path), exist_ok=True)
     logger.warning("Generating synthetic data for %s, fold %d", dataset_name, k)
     tables_train, tables_test = utils.get_train_test_split(dataset_name, k, limit=limit)
+    if dataset_name == "zurich_mle":
+        tables_train = tables_test.copy()
     metadata = sdv_metadata.generate_metadata(dataset_name, tables_train)
     # Create HMA1 model
     logger.warning("Fitting HMA1 model...")

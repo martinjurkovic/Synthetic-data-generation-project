@@ -8,8 +8,8 @@ CWD_PROJECT = os.getcwd().split(
     'Synthetic-data-generation-project')[0] + 'Synthetic-data-generation-project'
 
 def get_highest_fold(dataset_name, method_name):
-    path = os.path.join(CWD_PROJECT, 'data', 'synthetic', dataset_name, method_name)
-    highest_fold = 0
+    path = os.path.join(CWD_PROJECT, 'data', 'splits', dataset_name)
+    highest_fold = -1
     for file in os.listdir(path):
         if file.endswith(".csv"):
             table_split = file[:-4].split("_fold_")
