@@ -609,8 +609,8 @@ def generate_zurich_metadata(dataset_name, original_data, save=False):
             'format': '%Y-%m-%d',
         },
         'household_id': {
-            'type': 'id',
-            'subtype': 'string',
+            'type': 'numerical',
+            'subtype': 'float',
         },
         'household_role': {
             'type': 'categorical',
@@ -749,7 +749,7 @@ def generate_zurich_metadata(dataset_name, original_data, save=False):
         foreign_key="policy_id",
     )
 
-    if save_metadata:
+    if save:
         save_metadata(metadata, dataset_name)
     return metadata 
 
