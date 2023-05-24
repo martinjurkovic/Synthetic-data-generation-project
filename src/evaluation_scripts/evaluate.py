@@ -19,7 +19,7 @@ args, unknown = args.parse_known_args()
 
 limit = args.limit
 if limit == -1:
-    limit = get_highest_fold(args.dataset_name, args.method) + 1
+    limit = get_highest_fold(args.dataset_name, args.method, evaluation=True) + 1
 
 
 # %%

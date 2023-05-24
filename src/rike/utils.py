@@ -7,8 +7,12 @@ from rike.generation import sdv_metadata
 CWD_PROJECT = os.getcwd().split(
     'Synthetic-data-generation-project')[0] + 'Synthetic-data-generation-project'
 
-def get_highest_fold(dataset_name, method_name):
-    path = os.path.join(CWD_PROJECT, 'data', 'splits', dataset_name)
+def get_highest_fold(dataset_name, method_name, evaluation=False):
+    if not evaluation:
+        path = os.path.join(CWD_PROJECT, 'data', 'splits', dataset_name)
+    else:
+        path = os.path.join(CWD_PROJECT, 'data', 'synthetic', dataset_name, method_name)
+        
     highest_fold = -1
     for file in os.listdir(path):
         if file.endswith(".csv"):
