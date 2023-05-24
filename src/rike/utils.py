@@ -22,7 +22,7 @@ def get_highest_fold(dataset_name, method_name, evaluation=False):
                 highest_fold = fold
     return highest_fold
 
-def read_tables(dataset_name, leave_out_fold_num, type, split_by="_", name_index=1, limit=None, synthetic=False, method_name=None, metadata = None, **kwargs):
+def read_tables(dataset_name, leave_out_fold_num, type, split_by="_", name_index=1, limit=None, synthetic=False, method_name=None, metadata = None, evaluation = False, delta = 1, **kwargs):
     highest_fold = 99999
     if limit is not None:
         highest_fold = limit
@@ -51,10 +51,10 @@ def read_tables(dataset_name, leave_out_fold_num, type, split_by="_", name_index
             if fold == str(leave_out_fold_num) and type == "test":
                 table = pd.read_csv(
                     path + f'{"/" if path[-1] != "/" else ""}' + file, **kwargs)
-                if metadata is not None:
-                    table = add_fold_index_to_keys(fold, table_name, table, metadata)
+                # if metadata is not None:
+                #     table = add_fold_index_to_keys(fold, table_name, table, metadata)
                 tables[table_name] = table
-            elif fold != str(leave_out_fold_num) and type == "train" and int(fold) < highest_fold:
+            elif not evaluation and fold != str(leave_out_fold_num) and type == "train" and int(fold) < highest_fold:
                 table = pd.read_csv(
                     path + f'{"/" if path[-1] != "/" else ""}' + file, **kwargs)
                 if metadata is not None:
@@ -63,10 +63,17 @@ def read_tables(dataset_name, leave_out_fold_num, type, split_by="_", name_index
                     tables[table_name] = table
                 else:
                     tables[table_name] = pd.concat([tables[table_name], table])
+            elif evaluation and fold == (int(leave_out_fold_num) + delta) % 10 and type == "train" and int(fold) < highest_fold:
+                table = pd.read_csv(
+                    path + f'{"/" if path[-1] != "/" else ""}' + file, **kwargs)
+                # if metadata is not None:
+                #     table = add_fold_index_to_keys(fold, table_name, table, metadata)
+                tables[table_name] = table
+
     return tables
 
 
-def get_train_test_split(dataset_name, leave_out_fold_num, limit=None, synthetic=False, method_name = None, metadata = None):
+def get_train_test_split(dataset_name, leave_out_fold_num, limit=None, synthetic=False, method_name = None, metadata = None, evaluation = False, delta = 1):
     tables_train = read_tables(dataset_name, leave_out_fold_num, "train", limit=limit, synthetic=synthetic, method_name=method_name, metadata=metadata)
     tables_test = read_tables(dataset_name, leave_out_fold_num, "test", limit=limit, synthetic=synthetic, method_name=method_name, metadata=metadata)
     return tables_train, tables_test
