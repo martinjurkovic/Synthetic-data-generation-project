@@ -12,4 +12,4 @@
 
 source /d/hpc/projects/FRI/mj5835/miniconda3/etc/profile.d/conda.sh # intialize conda
 conda activate realtabformer_env # activate the previously created environment
-srun --nodes=1 --exclusive --gres=gpu:2 --ntasks=1 python /d/hpc/projects/FRI/mj5835/Synthetic-data-generation-project/src/generation_scripts/generate_realtabformer.py --dataset-name telstra-competition-dataset --start_fold 2
+srun --nodes=1 --exclusive --gres=gpu:2 --ntasks=1 python /d/hpc/projects/FRI/mj5835/Synthetic-data-generation-project/src/generation_scripts/generate_realtabformer.py --dataset-name telstra-competition-dataset --start_fold 4

@@ -15,7 +15,13 @@ import torch
 args = argparse.ArgumentParser()
 args.add_argument("--dataset-name", type=str, default="biodegradability")
 args.add_argument("--start_fold", type=int, default=0)
+args.add_argument("--limit", type=int, default=-1)
 args = args.parse_args()
+
+limit = args.limit
+if limit == -1:
+    limit = utils.get_highest_fold(args.dataset_name, "RCTGAN") + 1
+
 
 dataset_name = args.dataset_name
 start_fold = args.start_fold
@@ -31,7 +37,7 @@ CWD_PROJECT = os.getcwd().split(
 base_path = CWD_PROJECT + '/data/synthetic/' + dataset_name + '/RCTGAN/'
 
 # GENERATE SYNTHETIC DATA
-for k in tqdm.tqdm(range(start_fold, 10)):
+for k in tqdm.tqdm(range(start_fold, limit)):
     logger.error(f"STARTIG FOLD {k}!")
     model_save_path = f'models/rctgan/{dataset_name}/model_{k}.pickle'
     os.makedirs(os.path.dirname(model_save_path), exist_ok=True)

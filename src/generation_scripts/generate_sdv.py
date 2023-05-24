@@ -12,8 +12,12 @@ logger = logging_config.logger
 
 args = argparse.ArgumentParser()
 args.add_argument("--dataset-name", type=str, default="rossmann-store-sales")
-args.add_argument("--limit", type=int, default=10)
+args.add_argument("--limit", type=int, default=-1)
 args = args.parse_args()
+
+limit = args.limit
+if limit == -1:
+    limit = utils.get_highest_fold(args.dataset_name, "SDV") + 1
 
 dataset_name = args.dataset_name
 limit = args.limit

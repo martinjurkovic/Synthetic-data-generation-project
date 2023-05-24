@@ -12,7 +12,7 @@ def get_root_table(dataset_name):
         return "user_list"
     if dataset_name == "telstra-competition-dataset":
         return "train"
-    if dataset_name == "zurich":
+    if dataset_name in ("zurich", "zurich_mle"):
         return "customers"
     raise ValueError(f"Dataset {dataset_name} not supported")
 
@@ -28,7 +28,7 @@ def generate_metadata(dataset_name, original_data, save=False):
         return generate_coupon_metadata(dataset_name, original_data, save)
     if dataset_name == "telstra-competition-dataset":
         return generate_telstra_metadata(dataset_name, original_data, save)
-    if dataset_name == "zurich":
+    if dataset_name in ("zurich", "zurich_mle"):
         return generate_zurich_metadata(dataset_name, original_data, save)
     raise ValueError(f"Dataset {dataset_name} not supported")
 
