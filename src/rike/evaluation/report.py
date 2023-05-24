@@ -54,9 +54,11 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
 
     for k in tqdm(range(min(10, limit))):
         tables_orig_train, tables_orig_test = get_train_test_split(
-            dataset_name, leave_out_fold_num=k, synthetic=False, limit=limit, metadata=metadata)
+            dataset_name, leave_out_fold_num=k, synthetic=False, 
+            limit=limit, metadata=metadata)
         tables_synthetic_train, tables_synthetic_test = get_train_test_split(
-            dataset_name, leave_out_fold_num=k, synthetic=True, method_name=method_name, limit=limit, metadata=metadata)
+            dataset_name, leave_out_fold_num=k, synthetic=True, 
+            method_name=method_name, limit=limit, metadata=metadata)
         
         
         # select the same amout of rows for original and synthetic tables
@@ -64,7 +66,7 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
         # TODO: refactor to a function
         root_table = sdv_metadata.get_root_table(dataset_name)
         # train
-        nrows = min(tables_orig_test[root_table].shape[0], tables_synthetic_test[root_table].shape[0])
+        nrows = min(tables_orig_train[root_table].shape[0], tables_synthetic_train[root_table].shape[0])
         tables_orig_train[root_table] = tables_orig_train[root_table].sample(n=nrows, random_state=0)
         tables_synthetic_train[root_table] = tables_synthetic_train[root_table].sample(n=nrows, random_state=0)
         tables_synthetic_train = conditionally_sample(tables_synthetic_train, metadata, root_table)
@@ -128,7 +130,7 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
                                     synthetic_train=synthetic_train_children, 
                                     metadata = metadata,
                                     root_table= sdv_metadata.get_root_table(dataset_name),
-                                    save_path=f"metrics_report/{dataset_name}/{method_name}/{metric_name}/probabilities/multi_table_{k}.csv")
+                                    save_path=f"metrics_report/{dataset_name}/{method_name}/{metric_with_children}/probabilities/multi_table_{k}.csv")
             metrics_report = add_metric(metrics_report, metric_with_children, metric_value_with_children, k = k, multi_table=True)
 
         # Remove foreign key columns
@@ -177,19 +179,24 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
     for table_name in metrics_report["metrics"]["single_table"].keys():
         for metric, metrics in metrics_report["metrics"]["single_table"][table_name].items():
             scores = metrics["scores"]
-            metrics["mean"] = np.mean(scores)
-            metrics["std"] = np.std(scores)
-            metrics["min"] = np.min(scores)
-            metrics["max"] = np.max(scores)
-            metrics["median"] = np.median(scores)
+            metrics["mean"] = np.mean(scores, axis=0).tolist()
+            metrics["std"] = np.std(scores, axis=0).tolist()
+            metrics["min"] = np.min(scores, axis=0).tolist()
+            metrics["max"] = np.max(scores, axis=0).tolist()
+            metrics["median"] = np.median(scores, axis=0).tolist()
+            metrics['se'] = (np.std(scores, axis=0) / np.sqrt(len(scores))).tolist()
+            metrics['95ci'] = [[np.quantile(s, 0.025, axis=0), np.quantile(s, 0.975, axis=0)] for s in np.array(scores).T]
 
     for metric, metrics in metrics_report["metrics"]["multi_table"].items():
         scores = metrics["scores"]
-        metrics["mean"] = np.mean(scores)
-        metrics["std"] = np.std(scores)
-        metrics["min"] = np.min(scores)
-        metrics["max"] = np.max(scores)
-        metrics["median"] = np.median(scores)
+        # average over the columns
+        metrics["mean"] = np.mean(scores, axis=0).tolist()
+        metrics["std"] = np.std(scores, axis=0).tolist()
+        metrics["min"] = np.min(scores, axis=0).tolist()
+        metrics["max"] = np.max(scores, axis=0).tolist()
+        metrics["median"] = np.median(scores, axis=0).tolist()
+        metrics['se'] = (np.std(scores, axis=0) / np.sqrt(len(scores))).tolist()
+        metrics['95ci'] = [[np.quantile(s, 0.025, axis=0), np.quantile(s, 0.975, axis=0)] for s in np.array(scores).T]
             
     if save_report:
         with open(f"metrics_report/{dataset_name}_{method_name}.json", "w") as f:

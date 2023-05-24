@@ -10,7 +10,7 @@ from sklearn.metrics.pairwise import pairwise_distances
 from sdmetrics.multi_table import CardinalityShapeSimilarity
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
-from sklearn.metrics import accuracy_score, log_loss
+from sklearn.metrics import accuracy_score, log_loss, precision_score, recall_score
 from sdmetrics.utils import HyperTransformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
@@ -374,7 +374,8 @@ def discriminative_detection(original_test, synthetic_test, original_train, synt
             })
             df.sort_values(by='importance', ascending=False, inplace=True)
             df.to_csv(feature_importance_path, index=False)
-    return accuracy_score(y_test, y_pred)
+    #return log_loss(y_test, probs)
+    return [accuracy_score(y_test, y_pred), precision_score(y_test, y_pred), recall_score(y_test, y_pred), log_loss(y_test, probs)]
 
 
 def parent_child_logistic_detection(original_test, synthetic_test, original_train, synthetic_train, **kwargs):
@@ -405,6 +406,7 @@ def parent_child_xgb_detection(original_test, synthetic_test, original_train, sy
 def parent_child_discriminative_detection(original_test, synthetic_test, original_train, synthetic_train, clf=LogisticRegression(solver='lbfgs'), **kwargs):
     metadata = kwargs.get('metadata', None)
     root_table = kwargs.get('root_table', None)
+    save_path = kwargs.get('save_path', None)
     # join parent and child tables based on the metadata
     original_train = merge_children(original_train, metadata, root_table)
     synthetic_train = merge_children(synthetic_train, metadata, root_table)
@@ -461,4 +463,26 @@ def parent_child_discriminative_detection(original_test, synthetic_test, origina
     model.fit(X_train, y_train)
     probs = model.predict_proba(X_test)
     y_pred = probs.argmax(axis=1)
-    return accuracy_score(y_test, y_pred)
+    if save_path is not None:
+        # save probabilities
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        df = pd.DataFrame({
+            'id': np.hstack([original_ids, synthetic_ids]),
+            'prob_is_fake': probs[:, 1],
+            'y_pred': y_pred,
+            'y_true': y_test
+        })
+        df.to_csv(save_path, index=False)
+
+        # save feature importance
+        # TODO: convert to wrapper
+        if hasattr(clf, 'feature_importances_'):
+            feature_importance_path = save_path.replace('probabilities', 'feature_importance')
+            os.makedirs(os.path.dirname(feature_importance_path), exist_ok=True)
+            df = pd.DataFrame({
+                'feature': columns,
+                'importance': clf.feature_importances_
+            })
+            df.sort_values(by='importance', ascending=False, inplace=True)
+            df.to_csv(feature_importance_path, index=False)
+    return [accuracy_score(y_test, y_pred), precision_score(y_test, y_pred), recall_score(y_test, y_pred), log_loss(y_test, probs)]

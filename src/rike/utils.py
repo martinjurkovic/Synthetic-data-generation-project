@@ -90,8 +90,8 @@ def read_tables(dataset_name,
 
 
 def get_train_test_split(dataset_name, leave_out_fold_num, limit=None, synthetic=False, method_name = None, metadata = None, evaluation = False, delta = 1):
-    tables_train = read_tables(dataset_name, leave_out_fold_num, "train", limit=limit, synthetic=synthetic, method_name=method_name, metadata=metadata)
-    tables_test = read_tables(dataset_name, leave_out_fold_num, "test", limit=limit, synthetic=synthetic, method_name=method_name, metadata=metadata)
+    tables_train = read_tables(dataset_name, leave_out_fold_num, "train", limit=limit, synthetic=synthetic, method_name=method_name, metadata=metadata, evaluation=evaluation, delta=delta)
+    tables_test = read_tables(dataset_name, leave_out_fold_num, "test", limit=limit, synthetic=synthetic, method_name=method_name, metadata=metadata, evaluation=evaluation, delta=delta)
     return tables_train, tables_test
 
 def add_fold_index_to_keys(leave_out_fold_num, table_name, table, metadata):
