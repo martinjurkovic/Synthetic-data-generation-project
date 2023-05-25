@@ -13,7 +13,7 @@ from rike.utils import get_highest_fold
 
 args = argparse.ArgumentParser()
 args.add_argument("--dataset-name", type=str, default="biodegradability")
-args.add_argument("--method", type=str, default="mostlyai")
+args.add_argument("--method", type=str, default="subsample")
 args.add_argument("--limit", type=int, default=-1)
 args, unknown = args.parse_known_args()
 

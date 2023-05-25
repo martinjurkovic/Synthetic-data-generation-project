@@ -36,6 +36,9 @@ def get_frequency(
         if "datetime" in str(original[col].dtype):
             original[col] = original[col].astype("int64")
             synthetic[col] = synthetic[col].astype("int64") 
+            maximum = orig[col].max()
+            original[col] = original[col] / maximum
+            synthetic[col] = synthetic[col] / maximum
 
         if len(original[col].unique()) < 5 or original[col].dtype == 'object':  # categorical
             gt = (original[col].value_counts() / len(original)).to_dict()
@@ -356,12 +359,14 @@ def discriminative_detection(original_test, synthetic_test, original_train, synt
     X_train = np.concatenate([transformed_original_train, transformed_synthetic_train])
     # X_test = transformed_synthetic_test 
     X_test = np.concatenate([transformed_original_test, transformed_synthetic_test])
+    # synthetic labels are 1 as this is what we are interested in (for precision and recall)
     y_train = np.hstack([
-        np.ones(len(transformed_original_train)), np.zeros(len(transformed_synthetic_train))
+        np.zeros(transformed_original_train.shape[0]),
+        np.ones(transformed_synthetic_train.shape[0])
     ])
-    # y_test = np.zeros(len(transformed_synthetic_test))
     y_test = np.hstack([
-        np.ones(len(transformed_original_test)), np.zeros(len(transformed_synthetic_test))
+        np.zeros(transformed_original_test.shape[0]),
+        np.ones(transformed_synthetic_test.shape[0])
     ])
 
     model = Pipeline([
@@ -466,12 +471,13 @@ def parent_child_discriminative_detection(original_test, synthetic_test, origina
     X_train = np.concatenate([transformed_original_train, transformed_synthetic_train])
     # X_test = transformed_synthetic_test 
     X_test = np.concatenate([transformed_original_test, transformed_synthetic_test])
+    # synthetic labels are 1 as this is what we are interested in (for precision and recall)
     y_train = np.hstack([
-        np.ones(len(transformed_original_train)), np.zeros(len(transformed_synthetic_train))
+        np.zeros(len(transformed_original_train)), np.ones(len(transformed_synthetic_train))
     ])
     # y_test = np.zeros(len(transformed_synthetic_test))
     y_test = np.hstack([
-        np.ones(len(transformed_original_test)), np.zeros(len(transformed_synthetic_test))
+        np.zeros(len(transformed_original_test)), np.ones(len(transformed_synthetic_test))
     ])
     # construct the model pipeline
     # with standard scaler

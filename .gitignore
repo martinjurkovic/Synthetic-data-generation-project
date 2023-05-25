@@ -1,3 +1,6 @@
+# Windows script files
+*.bat
+
 # Temporary files
 *.temp
 

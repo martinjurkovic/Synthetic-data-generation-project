@@ -70,7 +70,7 @@ def generate_report(dataset_name, method_name, single_table_metrics=[xgboost_det
     for k in tqdm(range(min(10, limit))):
         tables_orig_train, tables_orig_test = get_train_test_split(
             dataset_name, leave_out_fold_num=k, synthetic=False, 
-            limit=limit, metadata=metadata)
+            method_name=method_name, limit=limit, metadata=metadata)
         tables_synthetic_train, tables_synthetic_test = get_train_test_split(
             dataset_name, leave_out_fold_num=k, synthetic=True, 
             method_name=method_name, limit=limit, metadata=metadata)
