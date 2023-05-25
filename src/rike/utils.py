@@ -208,6 +208,8 @@ def add_number_of_children(table, metadata, tables):
             num_children.columns = [fk, f'{child}_count']
             # join number of children to parent table
             parent = parent.merge(num_children, left_on=parent_fk, right_on=fk, how='left')
+            if fk != parent_fk:
+                parent = parent.drop(columns=fk)
 
             # aggregate the number of grandchildren
             for column in child_table.columns:

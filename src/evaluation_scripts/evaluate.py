@@ -24,16 +24,13 @@ if limit == -1:
 
 # %%
 single_table_metrics = [
-                       # ks_test,
                         #logistic_detection,
                         #random_forest_detection,
                         #svm_detection,
                         #knn_detection,
                         xgboost_detection,
                         #mlp_detection,
-                      #  chisquare_test,
-                      #  mean_max_discrepency,
-                       # js_divergence,
+                     
                         ]
 
 multi_table_metrics = [
@@ -42,10 +39,19 @@ multi_table_metrics = [
                         #parent_child_logistic_detection,
                       ]
 
+# statistical tests
+statistical_metrics = [
+                        ks_test,
+                        chisquare_test,
+                        mean_max_discrepency,
+                        js_divergence,
+                        ]
+
 # %%
 report = generate_report(args.dataset_name, args.method,
                          single_table_metrics=single_table_metrics, 
                          multi_table_metrics=multi_table_metrics,
+                         statistical_results=True,
                          save_report=True,
                          limit=limit)
 # print formatted report dict

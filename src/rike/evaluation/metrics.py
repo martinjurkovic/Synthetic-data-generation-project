@@ -37,7 +37,7 @@ def get_frequency(
             original[col] = original[col].astype("int64")
             synthetic[col] = synthetic[col].astype("int64") 
 
-        if len(original[col].unique()) < 5:  # categorical
+        if len(original[col].unique()) < 5 or original[col].dtype == 'object':  # categorical
             gt = (original[col].value_counts() / len(original)).to_dict()
             synth = (synthetic[col].value_counts() / len(synthetic)).to_dict()
         else:
@@ -64,18 +64,26 @@ def ks_test(original, synthetic, **kwargs):
     """
     Calculate the Kolmogorov-Smirnov test.
     """
-    res = []
-    for col in original.columns:
-        if original[col].dtype == "object":
-            continue
-        orig = original[col]
-        synth = synthetic[col]
-        orig = orig[~orig.isna()].values
-        synth = synth[~synth.isna()].values
-        statistic, _ = ks_2samp(orig, synth)
-        res.append(1 - statistic)
+    metadata = kwargs.get("metadata", None)
+    orig = original.copy().dropna()
+    synth = synthetic.copy().dropna()
+    orig.drop(metadata['primary_key'], axis=1, inplace=True)
+    synth.drop(metadata['primary_key'], axis=1, inplace=True)
 
-    return np.mean(res)
+    res = []
+    for col in orig.columns:
+        if orig[col].dtype == "object":
+            continue
+        orig_col = orig[col]
+        synth_col = synth[col]
+        orig_col = orig_col[~orig_col.isna()].values
+        synth_col = synth_col[~synth_col.isna()].values
+        statistic, _ = ks_2samp(orig_col, synth_col)
+        res.append(1 - statistic)
+    if len(res):
+        return np.mean(res)
+    else:
+        return -1
 
 
 def chisquare_test(original, synthetic, nbins=10, **kwargs):
@@ -122,8 +130,6 @@ def js_divergence(original, synthetic, nbins=10, normalize=False, **kwargs):
 
 
     for col in orig.columns:
-        if orig[col].dtype == "object":
-            continue
         if "datetime" in str(orig[col].dtype):
             orig[col] = orig[col].astype("int64")
             synth[col] = synth[col].astype("int64")
@@ -131,8 +137,14 @@ def js_divergence(original, synthetic, nbins=10, normalize=False, **kwargs):
             orig[col] = orig[col] / maximum
             synth[col] = synth[col] / maximum
         local_bins = min(nbins, len(orig[col].unique()))
-        original_bin, gt_bins = pd.cut(orig[col], bins=local_bins, retbins=True)
-        synthetic_bin = pd.cut(synth[col], bins=gt_bins)
+        if orig[col].dtype == "object":
+            # compute histogram bins for categorical features
+            # without pd.cut as it does not support categorical data
+            original_bin = orig[col].value_counts(dropna=False, normalize=normalize)
+            synthetic_bin = synth[col].value_counts(dropna=False, normalize=normalize)
+        else:
+            original_bin, gt_bins = pd.cut(orig[col], bins=local_bins, retbins=True)
+            synthetic_bin = pd.cut(synth[col], bins=gt_bins)
         stats_gt[col], stats_syn[col] = original_bin.value_counts(
             dropna=False, normalize=normalize
         ).align(
@@ -233,7 +245,15 @@ def mean_max_discrepency(original, synthetic, kernel='linear', nbins=10, **kwarg
         raise ValueError(f"Unsupported kernel {kernel}")
     
     return score
-            
+
+
+def calculate_statistical_metrics(original, synthetic, **kwargs):
+    ks = ks_test(original, synthetic, **kwargs)
+    js = js_divergence(original, synthetic, **kwargs)
+    mm = mean_max_discrepency(original, synthetic, **kwargs)
+    ch = chisquare_test(original, synthetic, **kwargs)
+    return [ks, js, mm, ch]
+
 
 def ml_efficiency(train_original, train_synthetic, test, validation=None, **kwargs):
     """

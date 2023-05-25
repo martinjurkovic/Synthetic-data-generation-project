@@ -7,32 +7,46 @@ from tqdm import tqdm
 
 from rike.generation import sdv_metadata
 from rike.utils import get_train_test_split, read_original_tables, conditionally_sample, add_number_of_children
-from rike.evaluation.metrics import ks_test, cardinality_similarity
+from rike.evaluation.metrics import ks_test, cardinality_similarity, xgboost_detection, calculate_statistical_metrics
 
 
-def add_table(results, table_name):
-    if table_name not in results["metrics"]["single_table"].keys():
-        results["metrics"]["single_table"][table_name] = {}
+def add_table(results, table_name, metric_type="single_table"):
+    if table_name not in results["metrics"][metric_type].keys():
+        results["metrics"][metric_type][table_name] = {}
     return results
 
 
-def add_metric(results, metric_name, metric_value, k=0, table_name= None, multi_table=False):
-    if multi_table:
+def add_metric(results, metric_name, metric_value, k=0, table_name=None, metric_type="multi_table"):
+    if metric_type == "multi_table":
         if metric_name not in results["metrics"]["multi_table"] or k == 0:
             results["metrics"]["multi_table"][metric_name] = {
                 "scores": []}
         results["metrics"]["multi_table"][metric_name]["scores"].append(
             metric_value)
-    else:
+    elif metric_type == "single_table":
         if metric_name not in results["metrics"]["single_table"][table_name] or k == 0:
             results["metrics"]["single_table"][table_name][metric_name] = {
                 "scores": []}
         results["metrics"]["single_table"][table_name][metric_name]["scores"].append(
             metric_value)
+    else:
+        raise ValueError(f"Unknown metric_type: {metric_type}")
     return results
 
 
-def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], multi_table_metrics = ['cardinality'], save_report=False, limit=10):
+def aggregate_results(metrics):
+    scores = metrics["scores"]
+    metrics["mean"] = np.mean(scores, axis=0).tolist()
+    metrics["std"] = np.std(scores, axis=0).tolist()
+    metrics["min"] = np.min(scores, axis=0).tolist()
+    metrics["max"] = np.max(scores, axis=0).tolist()
+    metrics["median"] = np.median(scores, axis=0).tolist()
+    metrics['se'] = (np.std(scores, axis=0) / np.sqrt(len(scores))).tolist()
+    metrics['95ci'] = [[np.quantile(s, 0.025, axis=0), np.quantile(s, 0.975, axis=0)] for s in np.array(scores).T]
+    return metrics
+
+
+def generate_report(dataset_name, method_name, single_table_metrics=[xgboost_detection], multi_table_metrics = ['cardinality'], statistical_results = True, save_report=False, limit=10):
     # read metrics_report from file
     if os.path.exists(f"metrics_report/{dataset_name}_{method_name}.json"):
         with open(f"metrics_report/{dataset_name}_{method_name}.json", "r") as f:
@@ -45,7 +59,7 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
                 "single_table": {
                 },
                 "multi_table": {
-                },
+                }
             }
         }
 
@@ -79,7 +93,6 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
         tables_synthetic_test = conditionally_sample(tables_synthetic_test, metadata, root_table)
         tables_orig_test = conditionally_sample(tables_orig_test, metadata, root_table)
             
-
         original_train_children = {}
         synthetic_train_children = {}
         original_test_children = {}
@@ -105,7 +118,6 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
             original_test_children[table] = add_number_of_children(table, metadata, tables_orig_test)
             synthetic_test_children[table] = add_number_of_children(table, metadata, tables_synthetic_test)
 
-
         # SDV cardinality shape similarity
         if 'cardinality' in multi_table_metrics:
             cardinality = cardinality_similarity(tables_orig_test,
@@ -123,7 +135,7 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
                                     metadata = metadata,
                                     root_table= sdv_metadata.get_root_table(dataset_name),
                                     save_path=f"metrics_report/{dataset_name}/{method_name}/{metric_name}/probabilities/multi_table_{k}.csv")
-            metrics_report = add_metric(metrics_report, metric_name, metric_value, k = k, multi_table=True)
+            metrics_report = add_metric(metrics_report, metric_name, metric_value, k = k, metric_type='multi_table')
 
             metric_with_children = metric.__name__ + '_with_children'
             metric_value_with_children = metric(original_test_children, synthetic_test_children,
@@ -132,12 +144,13 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
                                     metadata = metadata,
                                     root_table= sdv_metadata.get_root_table(dataset_name),
                                     save_path=f"metrics_report/{dataset_name}/{method_name}/{metric_with_children}/probabilities/multi_table_{k}.csv")
-            metrics_report = add_metric(metrics_report, metric_with_children, metric_value_with_children, k = k, multi_table=True)
+            metrics_report = add_metric(metrics_report, metric_with_children, metric_value_with_children, k = k, metric_type='multi_table')
 
         # Remove foreign key columns
         for table, fields in metadata.to_dict()['tables'].items():
             for field, values in fields['fields'].items():
                 if 'ref' in values.keys():
+                    #print('DROPPING', field, 'FROM', table)
                     # remove foreign keys for each table
                     tables_orig_test[table].drop(columns=[field], inplace=True)
                     tables_synthetic_test[table].drop(columns=[field], inplace=True)
@@ -160,7 +173,7 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
                                       synthetic_train=tables_synthetic_train[table_name], 
                                       metadata = metadata.to_dict()['tables'][table_name],
                                       save_path=f"metrics_report/{dataset_name}/{method_name}/{metric_name}/probabilities/{table_name}_{k}.csv")
-                metrics_report = add_metric(metrics_report, metric_name, metric_value, table_name=table_name, k = k)
+                metrics_report = add_metric(metrics_report, metric_name, metric_value, table_name=table_name, k = k, metric_type='single_table')
 
                 if len(metadata.get_children(table_name)) > 0:
                     metric_with_children = metric.__name__ + '_with_children'
@@ -169,36 +182,38 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
                                             synthetic_train=synthetic_train_children[table_name], 
                                             metadata = metadata.to_dict()['tables'][table_name],
                                             save_path=f"metrics_report/{dataset_name}/{method_name}/{metric_with_children}/probabilities/{table_name}_{k}.csv")
-                    metrics_report = add_metric(metrics_report, metric_with_children, metric_value_with_children, table_name=table_name, k = k)
+                    metrics_report = add_metric(metrics_report, metric_with_children, metric_value_with_children, table_name=table_name, k = k, metric_type='single_table')
                 
-                
+                if statistical_results:
+                    scores = calculate_statistical_metrics(tables_orig_test[table_name], 
+                                                        tables_synthetic_test[table_name],
+                                                        metadata = metadata.to_dict()['tables'][table_name])
+                    metrics_report = add_table(metrics_report, table_name, metric_type='single_table')
+                    metrics_report = add_metric(metrics_report, 'statistical', scores, table_name=table_name, k = k, metric_type='single_table')
+                    if len(metadata.get_children(table_name)) > 0:
+                        scores = calculate_statistical_metrics(original_test_children[table_name], 
+                                                                synthetic_test_children[table_name],
+                                                                metadata = metadata.to_dict()['tables'][table_name])
+                        metrics_report = add_table(metrics_report, table_name, metric_type='single_table')
+                        metrics_report = add_metric(metrics_report, 'statistical_with_children', scores, table_name=table_name, k = k, metric_type='single_table')
 
             if 'cardinality' in multi_table_metrics:
                 for score in cardinality[table_name]:
-                    metrics_report = add_metric(metrics_report, 'cardinality', score, table_name=table_name, k = k)
+                    metrics_report = add_metric(metrics_report, 'cardinality', score, table_name=table_name, k = k, metric_type='single_table')
+
+            
+
 
     for table_name in metrics_report["metrics"]["single_table"].keys():
         for metric, metrics in metrics_report["metrics"]["single_table"][table_name].items():
-            scores = metrics["scores"]
-            metrics["mean"] = np.mean(scores, axis=0).tolist()
-            metrics["std"] = np.std(scores, axis=0).tolist()
-            metrics["min"] = np.min(scores, axis=0).tolist()
-            metrics["max"] = np.max(scores, axis=0).tolist()
-            metrics["median"] = np.median(scores, axis=0).tolist()
-            metrics['se'] = (np.std(scores, axis=0) / np.sqrt(len(scores))).tolist()
-            metrics['95ci'] = [[np.quantile(s, 0.025, axis=0), np.quantile(s, 0.975, axis=0)] for s in np.array(scores).T]
+            metrics = aggregate_results(metrics)
 
     for metric, metrics in metrics_report["metrics"]["multi_table"].items():
-        scores = metrics["scores"]
-        # average over the columns
-        metrics["mean"] = np.mean(scores, axis=0).tolist()
-        metrics["std"] = np.std(scores, axis=0).tolist()
-        metrics["min"] = np.min(scores, axis=0).tolist()
-        metrics["max"] = np.max(scores, axis=0).tolist()
-        metrics["median"] = np.median(scores, axis=0).tolist()
-        metrics['se'] = (np.std(scores, axis=0) / np.sqrt(len(scores))).tolist()
-        metrics['95ci'] = [[np.quantile(s, 0.025, axis=0), np.quantile(s, 0.975, axis=0)] for s in np.array(scores).T]
+        metrics = aggregate_results(metrics)
             
+    # for metric, metrics in metrics_report["metrics"]["statistical"].items():
+    #     metrics = aggregate_results(metrics)
+    
     if save_report:
         with open(f"metrics_report/{dataset_name}_{method_name}.json", "w") as f:
             json.dump(metrics_report, f, indent=4, sort_keys=True)
