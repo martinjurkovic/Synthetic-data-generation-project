@@ -15,7 +15,7 @@ base_path = 'data/downloads/mostlyai'
 zip_fies = os.listdir(base_path)
 for file in zip_fies:
     if file.endswith(".zip"):
-        dataset = file.split('_')[0].lower()
+        dataset = file.split('_fold')[0].lower()
         if dataset not in dataset_name.lower():
               continue
         tables_original = read_original_tables(dataset_name)
@@ -27,7 +27,7 @@ for file in zip_fies:
         for subfolder in subfolders:
                files = os.listdir(os.path.join(unzip_path, subfolder))
                for file in files:
-                    table = file.split('_')[0].lower()
+                    table = file.split('_fold')[0].lower()
                     file_path = os.path.join(unzip_path, subfolder, file)
                     new_path = os.path.join('data/synthetic', dataset_name, 'mostlyai', f'{dataset_name}_{file}')
                     # create new folder if it does not exist
@@ -38,7 +38,6 @@ for file in zip_fies:
                     df.columns = orig_columns
                     if 'bond' in file:
                         df['type'][df['type'] == '_RARE_'] = -1
-                        print(df.type.unique())
                     df.to_csv(new_path, index=False)
                      
         
