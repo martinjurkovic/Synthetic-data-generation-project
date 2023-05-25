@@ -36,7 +36,7 @@ def get_frequency(
         if "datetime" in str(original[col].dtype):
             original[col] = original[col].astype("int64")
             synthetic[col] = synthetic[col].astype("int64") 
-            maximum = orig[col].max()
+            maximum = original[col].max()
             original[col] = original[col] / maximum
             synthetic[col] = synthetic[col] / maximum
 
