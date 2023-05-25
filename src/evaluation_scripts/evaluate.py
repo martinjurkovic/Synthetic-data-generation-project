@@ -2,8 +2,7 @@
 import json
 import argparse
 
-from rike.evaluation.metrics import (ks_test, chisquare_test, mean_max_discrepency, 
-                                     js_divergence, logistic_detection, random_forest_detection,
+from rike.evaluation.metrics import (logistic_detection, random_forest_detection,
                                      svm_detection, knn_detection, mlp_detection, xgboost_detection,
                                      parent_child_logistic_detection, parent_child_xgb_detection)
 from rike.evaluation.report import generate_report
@@ -39,13 +38,6 @@ multi_table_metrics = [
                         #parent_child_logistic_detection,
                       ]
 
-# statistical tests
-statistical_metrics = [
-                        ks_test,
-                        chisquare_test,
-                        mean_max_discrepency,
-                        js_divergence,
-                        ]
 
 # %%
 report = generate_report(args.dataset_name, args.method,
