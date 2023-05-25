@@ -40,6 +40,7 @@ def generate_report(dataset_name, method_name, single_table_metrics=[ks_test], m
     else:
         metrics_report = {
             "dataset_name": dataset_name,
+            "method_name": method_name,
             "metrics": {
                 "single_table": {
                 },

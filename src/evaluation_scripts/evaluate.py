@@ -25,12 +25,12 @@ if limit == -1:
 # %%
 single_table_metrics = [
                        # ks_test,
-                        logistic_detection,
-                        random_forest_detection,
-                        svm_detection,
-                        knn_detection,
+                        #logistic_detection,
+                        #random_forest_detection,
+                        #svm_detection,
+                        #knn_detection,
                         xgboost_detection,
-                        mlp_detection,
+                        #mlp_detection,
                       #  chisquare_test,
                       #  mean_max_discrepency,
                        # js_divergence,
@@ -39,7 +39,7 @@ single_table_metrics = [
 multi_table_metrics = [
                        # 'cardinality',
                         parent_child_xgb_detection,
-                        parent_child_logistic_detection,
+                        #parent_child_logistic_detection,
                       ]
 
 # %%
