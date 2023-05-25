@@ -586,7 +586,7 @@ def generate_coupon_metadata(dataset_name, original_data, save=False):
     return metadata
 
 
-def generate_zurich_metadata(dataset_name, original_data, save=False):
+def generate_zurich_metadata2(dataset_name, original_data, save=False):
     metadata = Metadata()
     # customer data:
     # customer_id,customer_type,gender,country_part,date_of_birth(1986-02-17),household_id,household_role
@@ -753,4 +753,65 @@ def generate_zurich_metadata(dataset_name, original_data, save=False):
         save_metadata(metadata, dataset_name)
     return metadata 
 
+def generate_zurich_metadata(dataset_name, original_data, save=False):
+    metadata = Metadata()
+    customer_fields_metadata = {
+        'date_of_birth': {
+            'type': 'datetime',
+            'format': '%Y-%m-%d'
+        },
+    }
+    metadata.add_table(
+        name='customers',
+        data=original_data['customers'],
+        primary_key='customer_id',
+        fields_metadata=customer_fields_metadata,
+    )
 
+    policy_fields_metadata = {
+        'underwriting_date': {
+            'type': 'datetime',
+            'format': '%Y-%m-%d'
+        },
+        'first_end_date': {
+            'type': 'datetime',
+            'format': '%Y-%m-%d'
+        },
+    }
+
+    metadata.add_table(
+        name='policies',
+        data=original_data['policies'],
+        primary_key='policy_id',
+        parent='customers',
+        foreign_key='customer_id',
+        fields_metadata=policy_fields_metadata,
+    )
+
+    claim_fields_metadata = {
+        'date_open': {
+            'type': 'datetime',
+            'format': '%Y-%m-%d'
+        },
+        'event_date': {
+            'type': 'datetime',
+            'format': '%Y-%m-%d'
+        },
+        'date_closed': {
+            'type': 'datetime',
+            'format': '%Y-%m-%d'
+        },
+    }
+
+    metadata.add_table(
+        name='claims',
+        data=original_data['claims'],
+        primary_key='claim_id',
+        parent='policies',
+        foreign_key='policy_id',
+        fields_metadata=claim_fields_metadata,
+    )
+
+    if save:
+        save_metadata(metadata, dataset_name)
+    return metadata 

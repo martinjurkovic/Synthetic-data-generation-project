@@ -32,6 +32,11 @@ for k in tqdm.tqdm(range(args.start_fold, limit)):
     tables_train, tables_test = utils.get_train_test_split(dataset_name, k, limit=limit)
     if dataset_name == "zurich_mle":
         tables_train = tables_test.copy()
+    if dataset_name in ("zurich_mle", "zurich"):
+        tables_train['claims']['customer_id'] = tables_train['claims']['customer_id'].astype(int)
+        tables_train['claims']['claim_id'] = tables_train['claims']['claim_id'].astype(int)
+        tables_train['claims']['policy_id'] = tables_train['claims']['policy_id'].astype(int)
+        tables_train['policies']['customer_id'] = tables_train['policies']['customer_id'].astype(int)
     metadata = sdv_metadata.generate_metadata(dataset_name, tables_train)
     # Create HMA1 model
     logger.warning("Fitting HMA1 model...")
