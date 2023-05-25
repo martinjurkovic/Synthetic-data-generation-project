@@ -10,7 +10,7 @@ from sklearn.metrics.pairwise import pairwise_distances
 from sdmetrics.multi_table import CardinalityShapeSimilarity
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
-from sklearn.metrics import accuracy_score, log_loss, precision_score, recall_score
+from sklearn.metrics import accuracy_score, classification_report, log_loss, precision_score, recall_score
 from sdmetrics.utils import HyperTransformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
@@ -512,3 +512,11 @@ def parent_child_discriminative_detection(original_test, synthetic_test, origina
             df.sort_values(by='importance', ascending=False, inplace=True)
             df.to_csv(feature_importance_path, index=False)
     return [accuracy_score(y_test, y_pred), precision_score(y_test, y_pred), recall_score(y_test, y_pred), log_loss(y_test, probs)]
+
+def get_scores_dict(test_y, y_pred, probs):
+    class_report_dict = classification_report(test_y, y_pred, output_dict=True)
+    return [class_report_dict['accuracy'], 
+                   class_report_dict['weighted avg']['precision'], 
+                   class_report_dict['macro avg']['recall'], 
+                   class_report_dict['macro avg']['precision'],
+                   log_loss(test_y, probs)]

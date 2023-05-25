@@ -34,8 +34,8 @@ def add_metric(results, metric_name, metric_value, k=0, table_name=None, metric_
     return results
 
 
-def aggregate_results(metrics):
-    scores = metrics["scores"]
+def aggregate_results(metrics, score_type="scores"):
+    scores = metrics[score_type]
     metrics["mean"] = np.mean(scores, axis=0).tolist()
     metrics["std"] = np.std(scores, axis=0).tolist()
     metrics["min"] = np.min(scores, axis=0).tolist()
