@@ -19,7 +19,7 @@ import pandas as pd
 original_data['customers']['date_of_birth'] = pd.to_datetime(original_data['customers']['date_of_birth'])
 original_data['claims']['date_closed'] = pd.to_datetime(original_data['claims']['date_closed'])
 original_data['claims']['event_date'] = pd.to_datetime(original_data['claims']['event_date'])
-original_data['claims']['cdate_open'] = pd.to_datetime(original_data['claims']['date_open'])
+original_data['claims']['date_open'] = pd.to_datetime(original_data['claims']['date_open'])
 original_data['policies']['underwriting_date'] = pd.to_datetime(original_data['policies']['underwriting_date'])
 original_data['policies']['cancellation_or_end_date'] = pd.to_datetime(original_data['policies']['cancellation_or_end_date'])
 original_data['policies']['first_end_date'] = pd.to_datetime(original_data['policies']['first_end_date'])
