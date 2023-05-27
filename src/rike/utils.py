@@ -195,17 +195,17 @@ def merge_children(tables, metadata, root):
     children = metadata.get_children(root)
     for child in children:
         fks = metadata.get_foreign_keys(root, child)
-        for fk in fks:
+        for i, fk in enumerate(fks):
             parent_fk = find_fk(root, fk, metadata)
             if parent_fk is None:
                 continue
             child_table = merge_children(tables, metadata, child)
             if fk in parent.columns:
-                parent = parent.merge(child_table, left_on=fk, right_on=fk, how='outer', suffixes=(f'_{root}', f'_{child}'))
+                parent = parent.merge(child_table, left_on=fk, right_on=fk, how='outer', suffixes=('', f'_{child}_{i}'))
             else:
                 # this happens when there are 2 foreign keys from the same table
                 # e.g. bond in biodegradabaility with fks atom_id and atom_id_2
-                parent = parent.merge(child_table, left_on=parent_fk, right_on=fk, how='outer', suffixes=(f'_{root}', f'_{child}')) 
+                parent = parent.merge(child_table, left_on=parent_fk, right_on=fk, how='outer', suffixes=('', f'_{child}_{i}')) 
     return parent
 
 
@@ -264,5 +264,26 @@ def add_number_of_children(table, metadata, tables):
         for column in parent.columns:
             if f'{child}_count' in column:
                 parent[column] = parent[column].fillna(0)
+    return parent
+
+
+def add_children_column_means(table, metadata, tables):
+    parent = tables[table].copy()
+    children = metadata.get_children(table)
+    for child in children:
+        child_table = add_children_column_means(child, metadata, tables)
+        fks = metadata.get_foreign_keys(table, child)
+        child_pk = metadata.get_primary_key(child)
+        for i, fk in enumerate(fks):
+            parent_fk = find_fk(table, fk, metadata)
+            if parent_fk is None:
+                continue
+            # aggregate values in children columns and add to parent table
+            child_aggregate = child_table.drop(columns=[child_pk]).groupby(fk).mean(numeric_only=True)
+            child_aggregate.reset_index(inplace=True)
+            # join number of children to parent table
+            parent = parent.merge(child_aggregate, left_on=parent_fk, right_on=fk, how='left', suffixes=('', f'_{child}_mean_{i}'))
+            if fk != parent_fk:
+                parent = parent.drop(columns=fk)
     return parent
 

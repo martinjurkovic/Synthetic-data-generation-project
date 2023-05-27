@@ -6,7 +6,7 @@ import pandas as pd
 from tqdm import tqdm
 
 from rike.generation import sdv_metadata
-from rike.utils import get_train_test_split, read_original_tables, conditionally_sample, add_number_of_children
+from rike.utils import get_train_test_split, read_original_tables, conditionally_sample, add_number_of_children, add_children_column_means
 from rike.evaluation.metrics import ks_test, cardinality_similarity, xgboost_detection, calculate_statistical_metrics
 
 
@@ -46,10 +46,10 @@ def aggregate_results(metrics, score_type="scores"):
     return metrics
 
 def set_zurich_type(tables_train):
-    tables_train['claims']['customer_id'] = tables_train['claims']['customer_id'].astype(int)
-    tables_train['claims']['claim_id'] = tables_train['claims']['claim_id'].astype(int)
-    tables_train['claims']['policy_id'] = tables_train['claims']['policy_id'].astype(int)
-    tables_train['policies']['customer_id'] = tables_train['policies']['customer_id'].astype(int)
+    tables_train['claims']['customer_id'] = tables_train['claims']['customer_id'].astype(int, errors='ignore')
+    tables_train['claims']['claim_id'] = tables_train['claims']['claim_id'].astype(int, errors='ignore')
+    tables_train['claims']['policy_id'] = tables_train['claims']['policy_id'].astype(int, errors='ignore')
+    tables_train['policies']['customer_id'] = tables_train['policies']['customer_id'].astype(int, errors='ignore')
     return tables_train
 
 
@@ -71,10 +71,19 @@ def generate_report(dataset_name, method_name, single_table_metrics=[xgboost_det
         }
 
     # load metadata
-    tables_original = read_original_tables(dataset_name)
+    # tables_original = read_original_tables(dataset_name)
+    # if dataset_name in ("zurich_mle", "zurich"):
+    #     tables_original = set_zurich_type(tables_original)
+    # metadata = sdv_metadata.generate_metadata(dataset_name, tables_original)
+    tables_train, tables_test = get_train_test_split(dataset_name, 0, limit=limit)
+    if dataset_name == "zurich_mle":
+        tables_train = tables_test.copy()
     if dataset_name in ("zurich_mle", "zurich"):
-        tables_original = set_zurich_type(tables_original)
-    metadata = sdv_metadata.generate_metadata(dataset_name, tables_original)
+        tables_train['claims']['customer_id'] = tables_train['claims']['customer_id'].astype(int)
+        tables_train['claims']['claim_id'] = tables_train['claims']['claim_id'].astype(int)
+        tables_train['claims']['policy_id'] = tables_train['claims']['policy_id'].astype(int)
+        tables_train['policies']['customer_id'] = tables_train['policies']['customer_id'].astype(int)
+    metadata = sdv_metadata.generate_metadata(dataset_name, tables_train)
 
     for k in tqdm(range(min(10, limit))):
         tables_orig_train, tables_orig_test = get_train_test_split(
@@ -83,11 +92,11 @@ def generate_report(dataset_name, method_name, single_table_metrics=[xgboost_det
         tables_synthetic_train, tables_synthetic_test = get_train_test_split(
             dataset_name, leave_out_fold_num=k, synthetic=True, 
             method_name=method_name, limit=limit, metadata=metadata)
-        if dataset_name in ("zurich_mle", "zurich"):
-            tables_synthetic_train = set_zurich_type(tables_synthetic_train)
-            tables_synthetic_test = set_zurich_type(tables_synthetic_test)
-            tables_orig_train = set_zurich_type(tables_orig_train)
-            tables_orig_test = set_zurich_type(tables_orig_test)
+        # if dataset_name in ("zurich_mle", "zurich"):
+        #     tables_synthetic_train = set_zurich_type(tables_synthetic_train)
+        #     tables_synthetic_test = set_zurich_type(tables_synthetic_test)
+        #     tables_orig_train = set_zurich_type(tables_orig_train)
+        #     tables_orig_test = set_zurich_type(tables_orig_test)
         
         
         # select the same amout of rows for original and synthetic tables
@@ -106,11 +115,21 @@ def generate_report(dataset_name, method_name, single_table_metrics=[xgboost_det
         tables_synthetic_test[root_table] = tables_synthetic_test[root_table].sample(n=nrows, random_state=0)
         tables_synthetic_test = conditionally_sample(tables_synthetic_test, metadata, root_table)
         tables_orig_test = conditionally_sample(tables_orig_test, metadata, root_table)
-            
+        # tables with number of children rows
         original_train_children = {}
         synthetic_train_children = {}
         original_test_children = {}
         synthetic_test_children = {}
+        # tables with children column means
+        original_train_means = {}
+        synthetic_train_means = {}
+        original_test_means = {}
+        synthetic_test_means = {}
+        # tables with number of children rows and children column means
+        original_train_children_means = {}
+        synthetic_train_children_means = {}
+        original_test_children_means = {}
+        synthetic_test_children_means = {}
         for table, fields in metadata.to_dict()['tables'].items():
             for field, values in fields['fields'].items():
                 # convert the datetime columns to datetime type
@@ -131,7 +150,28 @@ def generate_report(dataset_name, method_name, single_table_metrics=[xgboost_det
             synthetic_train_children[table] = add_number_of_children(table, metadata, tables_synthetic_train)
             original_test_children[table] = add_number_of_children(table, metadata, tables_orig_test)
             synthetic_test_children[table] = add_number_of_children(table, metadata, tables_synthetic_test)
-
+            # add children column means to each table
+            original_train_means[table] = add_children_column_means(table, metadata, tables_orig_train)
+            synthetic_train_means[table] = add_children_column_means(table, metadata, tables_synthetic_train)
+            original_test_means[table] = add_children_column_means(table, metadata, tables_orig_test)
+            synthetic_test_means[table] = add_children_column_means(table, metadata, tables_synthetic_test)
+            pk = metadata.get_primary_key(table)
+            # add children column means to each table
+            cols_to_use = original_train_means[table].columns.difference(original_train_children[table].columns)
+            original_train_children_means[table] = pd.merge(original_train_children[table], 
+                                                            original_train_means[table][cols_to_use], 
+                                                            left_index=True, right_index=True)
+            synthetic_train_children_means[table] = pd.merge(synthetic_train_children[table],
+                                                            synthetic_train_means[table][cols_to_use], 
+                                                            left_index=True, right_index=True)
+            original_test_children_means[table] = pd.merge(original_test_children[table],
+                                                            original_test_means[table][cols_to_use], 
+                                                            left_index=True, right_index=True)
+            synthetic_test_children_means[table] = pd.merge(synthetic_test_children[table],
+                                                            synthetic_test_means[table][cols_to_use], 
+                                                            left_index=True, right_index=True)
+            
+            
         # SDV cardinality shape similarity
         if 'cardinality' in multi_table_metrics:
             cardinality = cardinality_similarity(tables_orig_test,
@@ -150,7 +190,7 @@ def generate_report(dataset_name, method_name, single_table_metrics=[xgboost_det
                                     root_table= sdv_metadata.get_root_table(dataset_name),
                                     save_path=f"metrics_report/{dataset_name}/{method_name}/{metric_name}/probabilities/multi_table_{k}.csv")
             metrics_report = add_metric(metrics_report, metric_name, metric_value, k = k, metric_type='multi_table')
-
+            # add metric results with number of children rows
             metric_with_children = metric.__name__ + '_with_children'
             metric_value_with_children = metric(original_test_children, synthetic_test_children,
                                     original_train=original_train_children, 
@@ -159,6 +199,24 @@ def generate_report(dataset_name, method_name, single_table_metrics=[xgboost_det
                                     root_table= sdv_metadata.get_root_table(dataset_name),
                                     save_path=f"metrics_report/{dataset_name}/{method_name}/{metric_with_children}/probabilities/multi_table_{k}.csv")
             metrics_report = add_metric(metrics_report, metric_with_children, metric_value_with_children, k = k, metric_type='multi_table')
+            # add metric results with children column means
+            metric_with_means = metric.__name__ + '_with_means'
+            metric_value_with_means = metric(original_test_means, synthetic_test_means,
+                                    original_train=original_train_means, 
+                                    synthetic_train=synthetic_train_means, 
+                                    metadata = metadata,
+                                    root_table= sdv_metadata.get_root_table(dataset_name),
+                                    save_path=f"metrics_report/{dataset_name}/{method_name}/{metric_with_means}/probabilities/multi_table_{k}.csv")
+            metrics_report = add_metric(metrics_report, metric_with_means, metric_value_with_means, k = k, metric_type='multi_table')
+            # add metric results with children column means and children rows
+            metric_with_children_means = metric.__name__ + '_with_children_and_means'
+            metric_value_with_children_means = metric(original_test_children_means, synthetic_test_children_means,
+                                    original_train=original_train_children_means, 
+                                    synthetic_train=synthetic_train_children_means, 
+                                    metadata = metadata,
+                                    root_table= sdv_metadata.get_root_table(dataset_name),
+                                    save_path=f"metrics_report/{dataset_name}/{method_name}/{metric_with_children_means}/probabilities/multi_table_{k}.csv")
+            metrics_report = add_metric(metrics_report, metric_with_children_means, metric_value_with_children_means, k = k, metric_type='multi_table')
 
         # Remove foreign key columns
         for table, fields in metadata.to_dict()['tables'].items():
@@ -188,8 +246,9 @@ def generate_report(dataset_name, method_name, single_table_metrics=[xgboost_det
                                       metadata = metadata.to_dict()['tables'][table_name],
                                       save_path=f"metrics_report/{dataset_name}/{method_name}/{metric_name}/probabilities/{table_name}_{k}.csv")
                 metrics_report = add_metric(metrics_report, metric_name, metric_value, table_name=table_name, k = k, metric_type='single_table')
-
+                
                 if len(metadata.get_children(table_name)) > 0:
+                    # add metric results with number of children rows
                     metric_with_children = metric.__name__ + '_with_children'
                     metric_value_with_children = metric(original_test_children[table_name], synthetic_test_children[table_name],
                                             original_train=original_train_children[table_name], 
@@ -197,7 +256,23 @@ def generate_report(dataset_name, method_name, single_table_metrics=[xgboost_det
                                             metadata = metadata.to_dict()['tables'][table_name],
                                             save_path=f"metrics_report/{dataset_name}/{method_name}/{metric_with_children}/probabilities/{table_name}_{k}.csv")
                     metrics_report = add_metric(metrics_report, metric_with_children, metric_value_with_children, table_name=table_name, k = k, metric_type='single_table')
-                
+                    # add metric results with children column means
+                    metric_with_means = metric.__name__ + '_with_means'
+                    metric_value_with_means = metric(original_test_means[table_name], synthetic_test_means[table_name],
+                                            original_train=original_train_means[table_name], 
+                                            synthetic_train=synthetic_train_means[table_name], 
+                                            metadata = metadata.to_dict()['tables'][table_name],
+                                            save_path=f"metrics_report/{dataset_name}/{method_name}/{metric_with_means}/probabilities/{table_name}_{k}.csv")
+                    metrics_report = add_metric(metrics_report, metric_with_means, metric_value_with_means, table_name=table_name, k = k, metric_type='single_table')
+                    # add metric results with children column means and children rows
+                    metric_with_children_means = metric.__name__ + '_with_children_and_means'
+                    metric_value_with_children_means = metric(original_test_children_means[table_name], synthetic_test_children_means[table_name],
+                                            original_train=original_train_children_means[table_name], 
+                                            synthetic_train=synthetic_train_children_means[table_name], 
+                                            metadata = metadata.to_dict()['tables'][table_name],
+                                            save_path=f"metrics_report/{dataset_name}/{method_name}/{metric_with_children_means}/probabilities/{table_name}_{k}.csv")
+                    metrics_report = add_metric(metrics_report, metric_with_children_means, metric_value_with_children_means, table_name=table_name, k = k, metric_type='single_table')
+
                 if statistical_results:
                     scores = calculate_statistical_metrics(tables_orig_test[table_name], 
                                                         tables_synthetic_test[table_name],
