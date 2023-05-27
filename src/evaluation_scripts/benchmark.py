@@ -20,7 +20,7 @@ datasets = [
             # 'zurich',
             ]
 # gretel, mostlyai, RCTGAN, SDV, RealTabFormer, subsample
-methods = ['gretel', 'mostlyai', 'RCTGAN', 'SDV', 'RealTabFormer', 'subsample']
+methods = ['gretel', 'mostlyai', 'RCTGAN', 'SDV', 'REalTabFormer', 'subsample']
 
 single_table_metrics = [
                         logistic_detection,
