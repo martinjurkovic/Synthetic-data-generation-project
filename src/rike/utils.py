@@ -137,6 +137,8 @@ def add_fold_index_to_keys(leave_out_fold_num, table_name, table, metadata):
         fks = metadata.get_foreign_keys(parent, table_name)
         keys += fks
     for key in keys:
+        # drop rows with nan keys
+        table = table.dropna(subset=[key])
         # if the table[key] is numeric convert it to int first
         if table[key].dtype == np.float64 or table[key].dtype == np.int64:
             table[key] = table[key].astype(int)
