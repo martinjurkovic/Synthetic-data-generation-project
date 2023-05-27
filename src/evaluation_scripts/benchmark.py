@@ -12,8 +12,13 @@ CWD_PROJECT = os.getcwd().split(
     'Synthetic-data-generation-project')[0] + 'Synthetic-data-generation-project'
 
 # biodegradability, telstra-competition-dataset, mutagenesis, rossmann-store-sales, zurich
-datasets = ['biodegradability']#, 'telstra-competition-dataset', 'mutagenesis', 'rossmann-store-sales', 
-            # 'zurich',]
+datasets = [
+            # 'biodegradability',
+            #'mutagenesis', 
+            #'rossmann-store-sales' ,
+            'telstra-competition-dataset', 
+            # 'zurich',
+            ]
 # gretel, mostlyai, RCTGAN, SDV, RealTabFormer, subsample
 methods = ['gretel', 'mostlyai', 'RCTGAN', 'SDV', 'RealTabFormer', 'subsample']
 

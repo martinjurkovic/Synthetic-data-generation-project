@@ -12,8 +12,8 @@ from rike.utils import get_highest_fold
 
 
 args = argparse.ArgumentParser()
-args.add_argument("--dataset-name", type=str, default="zurich")
-args.add_argument("--method", type=str, default="sdv")
+args.add_argument("--dataset-name", type=str, default="rossmann-store-sales")
+args.add_argument("--method", type=str, default="gretel")
 args.add_argument("--limit", type=int, default=-1)
 args, unknown = args.parse_known_args()
 

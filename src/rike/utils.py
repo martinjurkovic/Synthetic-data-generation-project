@@ -138,11 +138,11 @@ def add_fold_index_to_keys(leave_out_fold_num, table_name, table, metadata):
         keys += fks
     for key in keys:
         # drop rows with nan keys
-        table = table.dropna(subset=[key])
+        table.dropna(subset=[key], inplace=True)
         # if the table[key] is numeric convert it to int first
         if table[key].dtype == np.float64 or table[key].dtype == np.int64:
             table[key] = table[key].astype(int)
-        table[key] = table[key].astype(str) + "_" + str(leave_out_fold_num)
+        table[key] = table[key].apply(lambda x: f'{x}_{leave_out_fold_num}')
     return table
 
 
