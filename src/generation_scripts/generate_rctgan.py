@@ -8,7 +8,7 @@ import pandas as pd
 from rike import utils
 from rike.generation import sdv_metadata
 from rike import logging_config
-from rctgan import RCTGAN
+from rctgan.relational import RCTGAN
 import torch
 
 # %%
