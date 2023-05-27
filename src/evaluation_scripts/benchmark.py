@@ -12,9 +12,8 @@ CWD_PROJECT = os.getcwd().split(
     'Synthetic-data-generation-project')[0] + 'Synthetic-data-generation-project'
 
 # biodegradability, telstra-competition-dataset, mutagenesis, rossmann-store-sales, zurich
-datasets = ['biodegradability', 'telstra-competition-dataset', 'mutagenesis', 'rossmann-store-sales', 
-            # 'zurich',
-            ]
+datasets = ['biodegradability']#, 'telstra-competition-dataset', 'mutagenesis', 'rossmann-store-sales', 
+            # 'zurich',]
 # gretel, mostlyai, RCTGAN, SDV, RealTabFormer, subsample
 methods = ['gretel', 'mostlyai', 'RCTGAN', 'SDV', 'RealTabFormer', 'subsample']
 
@@ -34,8 +33,8 @@ multi_table_metrics = [
                         #parent_child_logistic_detection,
                       ]
 
-for method in methods:
-    for dataset in datasets:
+for dataset in datasets:
+    for method in methods:
         path = os.path.join(CWD_PROJECT, 'data', 'splits', dataset)            
         if not os.path.exists(path):
            logger.error(f"No splits found for dataset: {dataset} and method {method}! Skipping...")
