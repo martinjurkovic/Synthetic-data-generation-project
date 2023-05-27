@@ -3,6 +3,9 @@ from rike.evaluation.metrics import (logistic_detection, random_forest_detection
                                      parent_child_logistic_detection, parent_child_xgb_detection)
 from rike.evaluation.report import generate_report
 from rike.utils import get_highest_fold
+from rike import logging_config
+
+logger = logging_config.logger
 
 # biodegradability, telstra-competition-dataset, mutagenesis, rossmann-store-sales, zurich
 datasets = ['biodegradability', 'telstra-competition-dataset', 'mutagenesis', 'rossmann-store-sales', 'zurich']
@@ -27,10 +30,15 @@ multi_table_metrics = [
 
 for method in methods:
     for dataset in datasets:
+        logger.error(f"STARTING {method} on {dataset}!")
         limit = get_highest_fold(dataset, method, evaluation=True) + 1
-        report = generate_report(dataset, method,
-                         single_table_metrics=single_table_metrics, 
-                         multi_table_metrics=multi_table_metrics,
-                         statistical_results=True,
-                         save_report=True,
-                         limit=limit)
+        try:
+          report = generate_report(dataset, method,
+                          single_table_metrics=single_table_metrics, 
+                          multi_table_metrics=multi_table_metrics,
+                          statistical_results=True,
+                          save_report=True,
+                          limit=limit)
+        except Exception as e:
+          logger.error(f"FAILED {method} on {dataset}!")
+          logger.error(e)

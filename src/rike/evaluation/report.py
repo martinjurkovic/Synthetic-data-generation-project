@@ -45,6 +45,13 @@ def aggregate_results(metrics, score_type="scores"):
     metrics['95ci'] = [[np.quantile(s, 0.025, axis=0), np.quantile(s, 0.975, axis=0)] for s in np.array(scores).T]
     return metrics
 
+def set_zurich_type(tables_train):
+    tables_train['claims']['customer_id'] = tables_train['claims']['customer_id'].astype(int)
+    tables_train['claims']['claim_id'] = tables_train['claims']['claim_id'].astype(int)
+    tables_train['claims']['policy_id'] = tables_train['claims']['policy_id'].astype(int)
+    tables_train['policies']['customer_id'] = tables_train['policies']['customer_id'].astype(int)
+    return tables_train
+
 
 def generate_report(dataset_name, method_name, single_table_metrics=[xgboost_detection], multi_table_metrics = ['cardinality'], statistical_results = True, save_report=False, limit=10):
     # read metrics_report from file
@@ -65,6 +72,8 @@ def generate_report(dataset_name, method_name, single_table_metrics=[xgboost_det
 
     # load metadata
     tables_original = read_original_tables(dataset_name)
+    if dataset_name in ("zurich_mle", "zurich"):
+        tables_original = set_zurich_type(tables_original)
     metadata = sdv_metadata.generate_metadata(dataset_name, tables_original)
 
     for k in tqdm(range(min(10, limit))):
@@ -74,6 +83,11 @@ def generate_report(dataset_name, method_name, single_table_metrics=[xgboost_det
         tables_synthetic_train, tables_synthetic_test = get_train_test_split(
             dataset_name, leave_out_fold_num=k, synthetic=True, 
             method_name=method_name, limit=limit, metadata=metadata)
+        if dataset_name in ("zurich_mle", "zurich"):
+            tables_synthetic_train = set_zurich_type(tables_synthetic_train)
+            tables_synthetic_test = set_zurich_type(tables_synthetic_test)
+            tables_orig_train = set_zurich_type(tables_orig_train)
+            tables_orig_test = set_zurich_type(tables_orig_test)
         
         
         # select the same amout of rows for original and synthetic tables
