@@ -7,6 +7,8 @@ from tqdm import tqdm
 from dotenv import load_dotenv
 from rike import utils
 from rike.generation import sdv_metadata
+from psycopg2.extras import execute_values
+from io import StringIO
 
 load_dotenv()
 
@@ -24,7 +26,8 @@ connection = psycopg2.connect(host=os.environ.get('PG_HOST'),
                         port=os.environ.get('PG_PORT'),
                         user=os.environ.get('PG_USER'),
                         password=os.environ.get('PG_PASSWORD'),
-                        dbname=args.dataset_name.split("-")[0],
+                        # dbname=args.dataset_name.split("-")[0],
+                        dbname="rossmann",
                         sslmode='require')
 
 cursor = connection.cursor()
@@ -115,6 +118,7 @@ def insert_rows(table_name, df, k=0):
         execute_write_query(insert_query, cursor, connection, tuple(row))
         # break
 
+# psycopg2.extensions.register_adapter(float, lambda x: 'NULL' if pd.isna(x) else float(x))        
 def insert_batch_rows(table_name, df, k=0, batch_size=100):
     insert_query = f"INSERT INTO {table_name}_fold_{k} VALUES (" + "%s,"*(len(df.columns)-1) + "%s)"
     rows = [tuple(row) for _, row in df.iterrows()]
@@ -127,6 +131,21 @@ def insert_batch_rows(table_name, df, k=0, batch_size=100):
         connection.commit()
         # break
 
+def insert_batch_rows_zurich(table_name, df, k=0, batch_size=100):
+    # Convert NaN values to None
+    df = df.where(pd.notnull(df), None)
+    
+    # Create a buffer to hold the data
+    buffer = StringIO()
+    df.to_csv(buffer, sep='\t', header=False, index=False, na_rep='NaN')
+    buffer.seek(0)
+
+    # Connect to the database and execute the query
+    with connection as conn:
+        with conn.cursor() as cursor:
+            cursor.copy_from(buffer, f"{table_name}_fold_{k}", null="NaN", columns=df.columns, sep='\t')
+            conn.commit()
+
 
 if __name__ == "__main__":
     # CREATE TABLES
@@ -137,6 +156,13 @@ if __name__ == "__main__":
     # create the tables
     for k in tqdm(range(10)):
         tables_train, tables_test = utils.get_train_test_split(dataset_name, k)
+        if dataset_name in ("zurich_mle", "zurich"):
+            tables_train['claims']['customer_id'] = tables_train['claims']['customer_id'].astype(int)
+            tables_train['claims']['claim_id'] = tables_train['claims']['claim_id'].astype(int)
+            tables_train['claims']['policy_id'] = tables_train['claims']['policy_id'].astype(int)
+            tables_train['policies']['customer_id'] = tables_train['policies']['customer_id'].astype(int)
+        if dataset_name == "zurich_mle":
+            tables_train = tables_test.copy()
         metadata = sdv_metadata.generate_metadata(dataset_name, tables_train)
         for table_name in metadata.to_dict()['tables'].keys():
             # create the table
@@ -151,4 +177,7 @@ if __name__ == "__main__":
             # reorder the columns of tables_train[table_name] to be like in the metadata
             tables_train[table_name] = tables_train[table_name][list(fields.keys())]
             # insert_rows(table_name, tables_train[table_name], k)
-            insert_batch_rows(table_name, tables_train[table_name], k, batch_size=1000)
+            if dataset_name in ("zurich_mle", "zurich"):
+                insert_batch_rows_zurich(table_name, tables_train[table_name], k, batch_size=1000)
+            else:
+                insert_batch_rows(table_name, tables_train[table_name], k, batch_size=1000)

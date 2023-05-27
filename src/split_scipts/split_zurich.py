@@ -24,6 +24,11 @@ original_data['policies']['underwriting_date'] = pd.to_datetime(original_data['p
 original_data['policies']['cancellation_or_end_date'] = pd.to_datetime(original_data['policies']['cancellation_or_end_date'])
 original_data['policies']['first_end_date'] = pd.to_datetime(original_data['policies']['first_end_date'])
 
+original_data['claims']['customer_id'] = original_data['claims']['customer_id'].astype('int', errors='ignore')
+original_data['claims']['claim_id'] = original_data['claims']['claim_id'].astype('int', errors='ignore')
+original_data['claims']['policy_id'] = original_data['claims']['policy_id'].astype('int', errors='ignore')
+original_data['policies']['customer_id'] = original_data['policies']['customer_id'].astype('int', errors='ignore')
+
 # convert int64 columns to int32
 # for column in original_data['customers'].columns:
 #     if original_data['customers'][column].dtype == 'int64':
