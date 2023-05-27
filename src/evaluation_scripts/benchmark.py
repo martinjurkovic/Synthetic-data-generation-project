@@ -5,7 +5,6 @@ from rike.evaluation.metrics import (logistic_detection, random_forest_detection
 from rike.evaluation.report import generate_report
 from rike.utils import get_highest_fold
 from rike import logging_config
-from realtabformer import REaLTabFormer
 
 logger = logging_config.logger
 CWD_PROJECT = os.getcwd().split(
@@ -13,14 +12,21 @@ CWD_PROJECT = os.getcwd().split(
 
 # biodegradability, telstra-competition-dataset, mutagenesis, rossmann-store-sales, zurich
 datasets = [
-            # 'biodegradability',
-            #'mutagenesis', 
-            #'rossmann-store-sales' ,
+            'biodegradability',
+            'mutagenesis', 
+            'rossmann-store-sales' ,
+            'zurich',
             'telstra-competition-dataset', 
-            # 'zurich',
             ]
 # gretel, mostlyai, RCTGAN, SDV, RealTabFormer, subsample
-methods = ['gretel', 'mostlyai', 'RCTGAN', 'SDV', 'REalTabFormer', 'subsample']
+methods = [
+        'gretel', 
+           'mostlyai', 
+           'RCTGAN', 
+           'SDV', 
+           'REalTabFormer', 
+           'subsample',
+           ]
 
 single_table_metrics = [
                         logistic_detection,

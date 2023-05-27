@@ -49,7 +49,7 @@ original_data['policies']['customer_id'] = original_data['policies']['customer_i
 #     print(original_data[table].info())
 # %%
 frac = 100000 / len(original_data["customers"])
-original_data["customers"] = original_data["customers"].sample(frac=0.001)
+original_data["customers"] = original_data["customers"].sample(frac=0.001, random_state=42)
 
 # %%
 # %%
