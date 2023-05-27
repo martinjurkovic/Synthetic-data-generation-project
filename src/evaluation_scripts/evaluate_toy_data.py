@@ -11,10 +11,7 @@ df3 = pd.DataFrame(np.random.randn(1000, 4) * 2, columns=list('ABCD'))
 df4 = df2.copy()
 df4[:500] = df1[:500]
 
-print(ks_test(df1, df2))
-print(chisquare_test(df1, df2))
-print(mean_max_discrepency(df1, df2))
-print(js_divergence(df1, df2))
+
 dcr = distance_to_closest_record(df1, df2)
 dcr_same = distance_to_closest_record(df1, df1)
 dcr_bad = distance_to_closest_record(df1, df3)

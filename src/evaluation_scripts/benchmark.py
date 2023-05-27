@@ -1,37 +1,16 @@
-# %%
-import json
-import warnings
-import argparse
-
 from rike.evaluation.metrics import (logistic_detection, random_forest_detection,
                                      svm_detection, knn_detection, mlp_detection, xgboost_detection,
                                      parent_child_logistic_detection, parent_child_xgb_detection)
 from rike.evaluation.report import generate_report
 from rike.utils import get_highest_fold
 
+# biodegradability, telstra-competition-dataset, mutagenesis, rossmann-store-sales, zurich
+datasets = ['biodegradability', 'telstra-competition-dataset', 'mutagenesis', 'rossmann-store-sales', 'zurich']
+# gretel, mostlyai, RCTGAN, SDV, RealTabFormer, subsample
+methods = ['gretel', 'mostlyai', 'RCTGAN', 'SDV', 'RealTabFormer', 'subsample']
 
-
-args = argparse.ArgumentParser()
-args.add_argument("--dataset-name", type=str, default="biodegradability")
-args.add_argument("--method", type=str, default="subsample")
-args.add_argument("--limit", type=int, default=-1)
-args, unknown = args.parse_known_args()
-
-limit = args.limit
-if limit == -1:
-    limit = get_highest_fold(args.dataset_name, args.method, evaluation=True) + 1
-elif args.method == "subsample":
-    if limit < 4:
-      warnings.warn("Subsample method requires at least 4 folds. Setting limit to 4.")
-      limit = 4
-    elif limit % 2 != 0:
-        warnings.warn("Subsample method requires an even number of folds. Setting limit to limit + 1.")
-        limit += 1
-
-
-# %%
 single_table_metrics = [
-                        #logistic_detection,
+                        logistic_detection,
                         #random_forest_detection,
                         #svm_detection,
                         #knn_detection,
@@ -46,15 +25,12 @@ multi_table_metrics = [
                         #parent_child_logistic_detection,
                       ]
 
-
-# %%
-report = generate_report(args.dataset_name, args.method,
+for method in methods:
+    for dataset in datasets:
+        limit = get_highest_fold(dataset, method, evaluation=True) + 1
+        report = generate_report(dataset, method,
                          single_table_metrics=single_table_metrics, 
                          multi_table_metrics=multi_table_metrics,
                          statistical_results=True,
                          save_report=True,
                          limit=limit)
-# print formatted report dict
-print(json.dumps(report, indent=4, sort_keys=True))
-
-# %%

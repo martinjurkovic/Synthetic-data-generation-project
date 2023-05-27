@@ -15,7 +15,7 @@ def get_highest_fold(dataset_name, method_name, evaluation=False):
         
     highest_fold = -1
     if not os.path.exists(path):
-        return 10
+        return 9
     for file in os.listdir(path):
         if file.endswith(".csv"):
             table_split = file[:-4].split("_fold_")
@@ -92,29 +92,32 @@ def read_tables(dataset_name,
 
 def subsample(dataset_name, leave_out_fold_num, synthetic=False, limit=None):
     if limit is None:
-        max_folds = 11
+        max_folds = 10
     else:
         max_folds = limit
     if synthetic:
         k = leave_out_fold_num
     else:
-        k = (leave_out_fold_num + 1) % max_folds - 1
-    #print('test ==', k)
+        k = (leave_out_fold_num + 1) % max_folds
     tables_test = read_tables(dataset_name, k, "test")
-    # train: read every other fold
+    # if k is odd, add all folds up to max_folds which are odd to train
+    if k % 2 == 1:
+        folds = [i for i in range(1, max_folds+1, 2)]
+    else:
+        folds = [i for i in range(0, max_folds, 2)]
+
     tables_train = {}
-    for i in range(k + 2, k + max_folds - 1, 2):
-        fold = i % (max_folds - 1)
-        if fold == leave_out_fold_num:
-            break
-        #print(f'Adding fold, {fold} to synthetic=={synthetic} train: loo:{leave_out_fold_num}')
-        fold_tables = read_tables(dataset_name, fold, "test")
-        for table_name, table in fold_tables.items():
+    for fold in folds:
+        if fold == k:
+            continue
+        # argument test returns only a single fold
+        tables = read_tables(dataset_name, fold, "test")
+        for table_name, table in tables.items():
             if table_name not in tables_train:
                 tables_train[table_name] = table
             else:
-                tables_train[table_name] = pd.concat([tables_train[table_name], table])
-    
+                tables_train[table_name] = pd.concat(
+                    [tables_train[table_name], table])
     return tables_train, tables_test
 
 
@@ -124,6 +127,7 @@ def get_train_test_split(dataset_name, leave_out_fold_num, limit=None, synthetic
     tables_train = read_tables(dataset_name, leave_out_fold_num, "train", limit=limit, synthetic=synthetic, method_name=method_name, metadata=metadata, evaluation=evaluation, delta=delta)
     tables_test = read_tables(dataset_name, leave_out_fold_num, "test", limit=limit, synthetic=synthetic, method_name=method_name, metadata=metadata, evaluation=evaluation, delta=delta)
     return tables_train, tables_test
+
 
 def add_fold_index_to_keys(leave_out_fold_num, table_name, table, metadata):
     pk = metadata.get_primary_key(table_name)

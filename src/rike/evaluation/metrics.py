@@ -18,6 +18,7 @@ from sklearn.neural_network import MLPClassifier
 import xgboost as xgb
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
+from sklearn.impute import SimpleImputer
 
 from rike.utils import merge_children
 
@@ -116,7 +117,10 @@ def chisquare_test(original, synthetic, nbins=10, **kwargs):
             pvalue = 0
         res.append(pvalue)
     
-    return np.mean(res)
+    if len(res):
+        return np.mean(res)
+    else:
+        return -1
 
 
 def js_divergence(original, synthetic, nbins=10, normalize=False, **kwargs):
@@ -136,9 +140,6 @@ def js_divergence(original, synthetic, nbins=10, normalize=False, **kwargs):
         if "datetime" in str(orig[col].dtype):
             orig[col] = orig[col].astype("int64")
             synth[col] = synth[col].astype("int64")
-            maximum = orig[col].max()
-            orig[col] = orig[col] / maximum
-            synth[col] = synth[col] / maximum
         local_bins = min(nbins, len(orig[col].unique()))
         if orig[col].dtype == "object":
             # compute histogram bins for categorical features
@@ -163,7 +164,11 @@ def js_divergence(original, synthetic, nbins=10, normalize=False, **kwargs):
         if np.isnan(stats[col]):
             raise RuntimeError("NaNs in prediction")
         
-    return sum(stats.values()) / len(stats.keys())
+    if len(stats):
+        return sum(stats.values()) / len(stats.keys())
+    else:
+        return -1
+        
 
 
 def mean_max_discrepency(original, synthetic, kernel='linear', nbins=10, **kwargs):
@@ -181,10 +186,17 @@ def mean_max_discrepency(original, synthetic, kernel='linear', nbins=10, **kwarg
         elif "datetime" in str(orig[col].dtype):
             orig[col] = orig[col].astype("int64")
             synth[col] = synth[col].astype("int64")
-            maximum = orig[col].max()
-            orig[col] = orig[col] / maximum
-            synth[col] = synth[col] / maximum
 
+    # standardize the values
+    pipe = Pipeline([
+            ("imputer", SimpleImputer(strategy="mean")),
+            ("scaler", StandardScaler()),
+            ]
+    )
+    if len(orig.columns) == 0:
+        return -1
+    orig = pipe.fit_transform(orig)
+    synth = pipe.transform(synth)
     
     if kernel == "linear":
         """
@@ -258,20 +270,7 @@ def calculate_statistical_metrics(original, synthetic, **kwargs):
     return [ks, js, mm, ch]
 
 
-def ml_efficiency(train_original, train_synthetic, test, validation=None, **kwargs):
-    """
-    Calculate the efficiency of the ML model.
-    """
-    pass
-
-
-def discriminative_measure(original, synthetic, **kwargs):
-    """
-    Calculate the discriminative measure using a ML model.
-    """
-    pass
-
-
+# PRIVACY
 def distance_to_closest_record(original, synthetic, **kwargs):
     """
     Calculate the distance to the closest record.
