@@ -44,6 +44,11 @@ for k in tqdm.tqdm(range(start_fold, limit)):
     tables_train, tables_test = utils.get_train_test_split(dataset_name, k)
     if dataset_name == "zurich_mle":
         tables_train = tables_test.copy()
+    if dataset_name in ("zurich_mle", "zurich"):
+        tables_train['claims']['customer_id'] = tables_train['claims']['customer_id'].astype(int)
+        tables_train['claims']['claim_id'] = tables_train['claims']['claim_id'].astype(int)
+        tables_train['claims']['policy_id'] = tables_train['claims']['policy_id'].astype(int)
+        tables_train['policies']['customer_id'] = tables_train['policies']['customer_id'].astype(int)
     metadata = sdv_metadata.generate_metadata(dataset_name, tables_train)
 
     assert root_table_name in metadata.to_dict()['tables'].keys(), \
@@ -61,7 +66,29 @@ for k in tqdm.tqdm(range(start_fold, limit)):
         logger.error("Loaded successfully!")
     else:
         logger.error(f"Initializing RCTGAN model for fold: {k}...")
-        model = RCTGAN(metadata)
+        hyper = {}
+        if dataset_name in ("zurich_mle", "zurich"):
+            hyper = {
+                'customers' : {
+                    'embedding_dim':12,
+                    'generator_lr': 2e-4,
+                    'generator_dim': (128, 128),
+                    'batch_size': 10000
+                },
+                'claims' : {
+                    'embedding_dim':12,
+                    'generator_lr': 2e-4,
+                    'generator_dim': (128, 128),
+                    'batch_size': 10000
+                },
+                'policies' : {
+                    'embedding_dim':12,
+                    'generator_lr': 2e-4,
+                    'generator_dim': (128, 128),
+                    'batch_size': 10000
+                }
+            }
+        model = RCTGAN(metadata, hyper)
         # ignores warnings being raised inside the RCTGAN package
         with pd.option_context('mode.chained_assignment', None):
             logger.error(f"FITTING RCTGAN model for fold: {k}...")

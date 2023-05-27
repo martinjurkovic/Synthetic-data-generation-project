@@ -6,7 +6,7 @@
 #SBATCH --nodes=1 # number of nodes
 #SBATCH --ntasks=1 # number of tasks
 #SBATCH --cpus-per-task=12 # number of allocated cores
-#SBATCH --mem=64G
+#SBATCH --mem=128G
 
 source /d/hpc/projects/FRI/mj5835/miniconda3/etc/profile.d/conda.sh # intialize conda
 conda activate realtabformer_env # activate the previously created environment
