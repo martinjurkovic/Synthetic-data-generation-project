@@ -155,7 +155,6 @@ def generate_report(dataset_name, method_name, single_table_metrics=[xgboost_det
             synthetic_train_means[table] = add_children_column_means(table, metadata, tables_synthetic_train)
             original_test_means[table] = add_children_column_means(table, metadata, tables_orig_test)
             synthetic_test_means[table] = add_children_column_means(table, metadata, tables_synthetic_test)
-            pk = metadata.get_primary_key(table)
             # add children column means to each table
             cols_to_use = original_train_means[table].columns.difference(original_train_children[table].columns)
             original_train_children_means[table] = pd.merge(original_train_children[table], 

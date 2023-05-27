@@ -82,6 +82,8 @@ def ks_test(original, synthetic, **kwargs):
         synth_col = synth[col]
         orig_col = orig_col[~orig_col.isna()].values
         synth_col = synth_col[~synth_col.isna()].values
+        if len(orig_col) == 0 or len(synth_col) == 0:
+            continue
         statistic, _ = ks_2samp(orig_col, synth_col)
         res.append(1 - statistic)
     if len(res):

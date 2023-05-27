@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import numpy as np
 import re
 
 from rike.generation import sdv_metadata
@@ -136,6 +137,9 @@ def add_fold_index_to_keys(leave_out_fold_num, table_name, table, metadata):
         fks = metadata.get_foreign_keys(parent, table_name)
         keys += fks
     for key in keys:
+        # if the table[key] is numeric convert it to int first
+        if table[key].dtype == np.float64 or table[key].dtype == np.int64:
+            table[key] = table[key].astype(int)
         table[key] = table[key].astype(str) + "_" + str(leave_out_fold_num)
     return table
 
@@ -220,8 +224,7 @@ def conditionally_sample(tables, metadata, root):
             if parent_fk is None:
                 continue
             parent_ids = parent[parent_fk].unique()
-            child_table = child_table[child_table[fk].isin(parent_ids)]
-            tables[child] = child_table
+            tables[child] = child_table[child_table[fk].isin(parent_ids)]
             tables = conditionally_sample(tables, metadata, child)
     return tables
 

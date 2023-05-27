@@ -12,8 +12,8 @@ from rike.utils import get_highest_fold
 
 
 args = argparse.ArgumentParser()
-args.add_argument("--dataset-name", type=str, default="biodegradability")
-args.add_argument("--method", type=str, default="subsample")
+args.add_argument("--dataset-name", type=str, default="zurich")
+args.add_argument("--method", type=str, default="sdv")
 args.add_argument("--limit", type=int, default=-1)
 args, unknown = args.parse_known_args()
 
@@ -42,7 +42,7 @@ single_table_metrics = [
 
 multi_table_metrics = [
                        # 'cardinality',
-                        parent_child_xgb_detection,
+                       # parent_child_xgb_detection,
                         #parent_child_logistic_detection,
                       ]
 
