@@ -1,5 +1,4 @@
-# A Survey and Empirical Comparison of Synthetic Data Generation Methods for Relational Data
-## Visualized results
+# A Survey and Empirical Comparison of Synthetic Data Generation Methods for Relational Data: Visualized results
 
 ## Single Table Visualizations
 
