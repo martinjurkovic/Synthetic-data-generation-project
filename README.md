@@ -39,3 +39,24 @@ pip install -e .
 
 
 Feel free to explore the repository and reach out to the team members or the mentor for any questions or inquiries.
+
+## Additional Instructions
+
+### Downloading benchmark datasets:
+Benchmark datasets can be downloaded by running:
+`src/download_scripts/download_datasets.sh`.
+
+### Splitting data:
+Scripts for splitting the downloaded datasets can be found in `src/split_scripts`. The split datasets into k folds will be saved into `data/splits/<dataset_name>`.
+
+### Generating data:
+Scripts for generating data can be found in the `src/generation_scripts` directory.  
+Since RCTGAN method's dependencies clash with other methods, we provide a separate `requirements_rctgan.txt` and `setup_rctgan.py` for building the rike package with RCTGAN. The synthetic datasets split into k folds will be saved into `data/splits/<dataset_name>`.
+
+### Evaluating data:
+To evaluate the synthetic datasets, run `src/evaluation_scripts/benchmark.py`.  
+Reports of the metrics will be saved into `metrics_report/` as `.json` files. In the `metrics_report/` directory, you will also find all of the results produced during this project.
+
+### Results:
+Visualizations of all the results from the project are in [RESULTS.md](./RESULTS.md).  
+The final report is available [here](./final_report/report.pdf).
