@@ -42,3 +42,11 @@
 
 ### Dataset: Zurich
 ![Zurich](figs/multi_table/zurich.png)
+
+## Privacy Visualizations 
+
+### Zurich Customer & Policy Data: Distance to Closest Record
+![Zurich Customer & Policy Data: Distance to Closest Record](figs/privacy/dcr-zurich.png)
+
+### Zurich Customer & Policy Data: Nearest Neighbor Distance Ratio
+![Zurich Customer & Policy Data: Nearest Neighbor Distance Ratio](figs/privacy/nndr-zurich.png)
