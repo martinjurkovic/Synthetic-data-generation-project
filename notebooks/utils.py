@@ -1,10 +1,14 @@
 import os
+import json
 
 import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sdmetrics.reports import utils
+
+CWD_PROJECT = os.getcwd().split(
+    'Synthetic-data-generation-project')[0] + 'Synthetic-data-generation-project'
 
 def read_tables(path, split_by="-", name_index=-1, **kwargs):
     tables = {}
@@ -104,3 +108,17 @@ def plot_real_vs_synthetic_parent_child(real, synthetic, parent, child, col_pare
     axes[1].set_title('Synthetic Data')
     fig.suptitle(f'Parent-Child Joint Distribution: {col_parent} vs {col_child}')
     fig.tight_layout()
+
+def read_all_metric_reports(datasets, methods):
+    JSON_PATH = os.path.join(CWD_PROJECT, 'metrics_report')
+    all_scores = {}
+    for dataset in datasets:
+        all_scores[dataset] = {}
+        for method in methods:
+            for file in os.listdir(JSON_PATH):
+                if file.endswith(".json"):
+                    if dataset in file and method in file:
+                        with open(os.path.join(JSON_PATH, file)) as f:
+                            data = json.load(f)
+                            all_scores[dataset][method] = data
+    return all_scores

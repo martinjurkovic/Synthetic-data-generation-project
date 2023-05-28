@@ -1,0 +1,28 @@
+{
+  "dataset_name": "biodegradability",
+  "metrics": {
+    "single_table": {
+      "table1": [
+        {
+          "metric_name": "ks-test",
+          "metric_score": "0.5"
+        }
+      ],
+      "table2": [
+        {
+          "metric_name": "ks-test",
+          "metric_score": "0.5"
+        }
+      ]
+    },
+    "multi_table": [
+      {
+        "metric_name": "cardinality",
+        "metric_score": "0.5"
+      },
+      {
+        "logistic_detection": 0.5
+      }
+    ]
+  }
+}

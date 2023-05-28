@@ -2,7 +2,7 @@ import os
 import shutil
 import zipfile
 
-DATA_DIR = 'data'
+DATA_DIR = 'data/original'
 
 #for zip in datadir unzip the dataset
 for file in os.listdir(DATA_DIR):
@@ -22,5 +22,5 @@ for file in os.listdir(DATA_DIR):
         os.remove(zip_path)
         # delete the __MACOSX folder if it exists
         if os.path.exists(f'{unzip_path}/__MACOSX'):
-            os.rmdir(f'{unzip_path}/__MACOSX')
+            shutil.rmtree(f'{unzip_path}/__MACOSX')
             

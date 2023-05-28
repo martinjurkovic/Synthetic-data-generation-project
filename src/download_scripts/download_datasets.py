@@ -2,7 +2,7 @@ import os
 import mysql.connector
 
 
-DATA_DIR = 'data'
+DATA_DIR = 'data/original'
 def download_dataset(dataset):
     print(f'Downloading {dataset} dataset')
 

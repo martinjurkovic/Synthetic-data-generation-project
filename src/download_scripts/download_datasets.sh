@@ -7,15 +7,15 @@ python src/data/download_datasets.py
 
 # Telstra
 kaggle datasets download -d yifanxie/telstra-competition-dataset 
-mv telstra-competition-dataset.zip data/telstra-competition-dataset.zip
+mv telstra-competition-dataset.zip data/original/telstra-competition-dataset.zip
 
 # Rossman Store Sales
 kaggle datasets download -d pratyushakar/rossmann-store-sales
-mv rossmann-store-sales.zip data/rossmann-store-sales.zip
+mv rossmann-store-sales.zip data/original/rossmann-store-sales.zip
 
 # Coupon Purchase Prediction
 kaggle competitions download -c coupon-purchase-prediction
-mv coupon-purchase-prediction.zip data/coupon-purchase-prediction.zip
+mv coupon-purchase-prediction.zip data/original/coupon-purchase-prediction.zip
 
 # # World Development Indicators
 # kaggle datasets download -d theworldbank/world-development-indicators

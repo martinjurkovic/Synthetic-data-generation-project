@@ -1,0 +1,97 @@
+import os
+import pandas as pd
+from sklearn.model_selection import KFold
+
+
+def read_tables(dataset_name, split_by="-", name_index=-1, **kwargs):
+    cwd = os.getcwd()
+    cwd_project = cwd.split(
+        'Synthetic-data-generation-project')[0] + 'Synthetic-data-generation-project'
+    path = cwd_project + '/data/original/' + dataset_name + '/'
+    tables = {}
+    for file in os.listdir(path):
+        if file.endswith(".csv"):
+            table_name = file[:-4].split(split_by)[name_index]
+            table = pd.read_csv(
+                path + f'{"/" if path[-1] != "/" else ""}' + file, **kwargs)
+            tables[table_name] = table
+    return tables
+
+
+def split_k_fold(df, n_splits=10, shuffle=True, random_state=42):
+    kf = KFold(n_splits=n_splits, shuffle=shuffle, random_state=random_state)
+    folds = []
+    for train_index, test_index in kf.split(df):
+        # train_fold = df.iloc[train_index]
+        test_fold = df.iloc[test_index]
+        folds.append(test_fold)
+    return folds
+
+def split_on_parent(parent_folds, child_table, left_on, right_on):
+    child_folds = []
+    for i, (parent_train, parent_test) in enumerate(parent_folds):
+        child_train = pd.merge(parent_train, child_table, how="right", left_on=left_on, right_on=right_on)
+        child_test = pd.merge(parent_test, child_table, how="right", left_on=left_on, right_on=right_on)
+
+        child_folds.append((child_train, child_test))
+
+    return child_folds
+
+def split_k_fold_on_parent(parent_folds, child_table, split_col_names):
+    child_folds = []
+    for i, parent_test in enumerate(parent_folds):
+        # get indexes of rows in child table which have molecule_id in parent_train
+        child_test_indexes = []
+        for idx, (split_child, split_parent)  in enumerate(split_col_names):
+            if idx == 0:
+                child_test_indexes = child_table[child_table[split_child].isin(parent_test[split_parent])].index
+            else:
+                # keep only indexes in child_train_indexes of rows in child table which have molecule_id in parent_train
+                child_test_indexes = child_table[child_table[split_child].isin(parent_test[split_parent])].index.intersection(child_test_indexes)
+
+        child_test = child_table.iloc[child_test_indexes]
+        child_folds.append(child_test)
+    return child_folds
+
+def split_k_fold_on_multiple_parents(parents_folds, child_table, split_col_names):
+    """
+    split_col_names: 2D array of split_col_names pairs
+    
+    """
+    child_folds = []
+    for i, parent_folds in enumerate(parents_folds):
+        if i == 0:
+            child_folds = split_k_fold_on_parent(parent_folds, child_table, split_col_names[i])
+        else:
+            temp_folds = split_k_fold_on_parent(parent_folds, child_table, split_col_names[i])
+            for j, child_test in enumerate(temp_folds):
+                # get an intersection of indexes of child_train and child_folds[j][0]
+                child_test_indexes = child_test.index.intersection(child_folds[j].index)
+                child_folds[j] = child_folds[j].loc[child_test_indexes]
+    return child_folds
+
+def save_folds(table_folds, dataset_name, table_names):
+    cwd = os.getcwd()
+    cwd_project = cwd.split(
+        'Synthetic-data-generation-project')[0] + 'Synthetic-data-generation-project'
+    path = cwd_project + '/data/splits/' + dataset_name + '/'
+
+    # create directory if it doesn't exist
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    for i, temp_folds in enumerate(table_folds):
+        for j, test in enumerate(temp_folds):
+            # train.to_csv(f'{path}/{dataset_name}_{table_names[i]}_fold_{j}_train.csv')
+            test.to_csv(f'{path}/{dataset_name}_{table_names[i]}_fold_{j}.csv', index=False)
+
+def add_primary_key(table, name='id'):
+    table.insert(0, name, range(0, len(table)))
+    return table
+
+def merge_folds_for_train(table_folds):
+    train = pd.DataFrame()
+    for i, temp_folds in enumerate(table_folds):
+        for j, temp_fold in enumerate(temp_folds):
+            train = train.append(temp_fold)
+    return train
