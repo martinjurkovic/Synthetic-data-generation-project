@@ -17,7 +17,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
 import xgboost as xgb
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.impute import SimpleImputer
 
 from rike.utils import merge_children
@@ -349,7 +349,7 @@ def discriminative_detection(original_test, synthetic_test, original_train, synt
         transformed_original_test = transformed_original_test.drop(metadata['primary_key'], axis=1)
     
 
-    ht = HyperTransformer()
+    ht = CustomHyperTransformer()
     transformed_original_train = ht.fit_transform(transformed_original_train)
     columns = transformed_original_train.columns
     transformed_original_train = transformed_original_train.to_numpy()
@@ -461,7 +461,7 @@ def parent_child_discriminative_detection(original_test, synthetic_test, origina
                 original_test.drop(column, axis=1, inplace=True)
                 synthetic_test.drop(column, axis=1, inplace=True)
 
-    ht = HyperTransformer()
+    ht = CustomHyperTransformer()
     transformed_original_train = ht.fit_transform(original_train)
     columns = transformed_original_train.columns
     transformed_original_train = transformed_original_train.to_numpy()
@@ -521,3 +521,83 @@ def get_scores_dict(test_y, y_pred, probs):
                    class_report_dict['macro avg']['recall'], 
                    class_report_dict['macro avg']['precision'],
                    log_loss(test_y, probs)]
+
+class CustomHyperTransformer(HyperTransformer):
+    def fit(self, data):
+        """Fit the HyperTransformer to the given data.
+
+        Args:
+            data (pandas.DataFrame):
+                The data to transform.
+        """
+        if not isinstance(data, pd.DataFrame):
+            data = pd.DataFrame(data)
+
+        for field in data:
+            kind = data[field].dropna().infer_objects().dtype.kind
+            self.column_kind[field] = kind
+
+            if kind == 'i' or kind == 'f':
+                # Numerical column.
+                self.column_transforms[field] = {'mean': data[field].mean()}
+            elif kind == 'b':
+                # Boolean column.
+                numeric = pd.to_numeric(data[field], errors='coerce').astype(float)
+                self.column_transforms[field] = {'mode': numeric.mode().iloc[0]}
+            elif kind == 'O':
+                # Categorical column.
+                col_data = pd.DataFrame({'field': data[field]})
+                enc = OneHotEncoder(handle_unknown='ignore')
+                enc.fit(col_data)
+                self.column_transforms[field] = {'one_hot_encoder': enc}
+            elif kind == 'M':
+                # Datetime column.
+                nulls = data[field].isna()
+                integers = pd.to_numeric(
+                    data[field], errors='coerce').to_numpy().astype(np.float64)
+                integers[nulls] = np.nan
+                self.column_transforms[field] = {'mean': pd.Series(integers).mean()}
+
+    def transform(self, data):
+        """Transform the given data based on the data type of each column.
+
+        Args:
+            data (pandas.DataFrame):
+                The data to transform.
+
+        Returns:
+            pandas.DataFrame:
+                The transformed data.
+        """
+        if not isinstance(data, pd.DataFrame):
+            data = pd.DataFrame(data)
+
+        for field in data:
+            transform_info = self.column_transforms[field]
+
+            kind = self.column_kind[field]
+            if kind == 'i' or kind == 'f':
+                # Numerical column.
+                data[field] = data[field].fillna(transform_info['mean'])
+            elif kind == 'b':
+                # Boolean column.
+                data[field] = pd.to_numeric(data[field], errors='coerce').astype(float)
+                data[field] = data[field].fillna(transform_info['mode'])
+            elif kind == 'O':
+                # Categorical column.
+                col_data = pd.DataFrame({'field': data[field].astype("object")})
+                out = transform_info['one_hot_encoder'].transform(col_data).toarray()
+                transformed = pd.DataFrame(
+                    out, columns=[f'value{i}' for i in range(np.shape(out)[1])])
+                data = data.drop(columns=[field])
+                data = pd.concat([data, transformed.set_index(data.index)], axis=1)
+            elif kind == 'M':
+                # Datetime column.
+                nulls = data[field].isna()
+                integers = pd.to_numeric(
+                    data[field], errors='coerce').to_numpy().astype(np.float64)
+                integers[nulls] = np.nan
+                data[field] = pd.Series(integers)
+                data[field] = data[field].fillna(transform_info['mean'])
+
+        return data
