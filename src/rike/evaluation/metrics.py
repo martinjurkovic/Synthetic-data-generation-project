@@ -289,7 +289,7 @@ def nearest_neighbour_distance_ratio(original, synthetic, **kwargs):
     distances = np.sort(distances, axis=1)
     nearest = distances[:, 0]
     second_nearest = distances[:, 1]
-    return nearest / second_nearest
+    return nearest / (second_nearest + 1e-10)
 
 # multi table metrics
 def cardinality_similarity(tables_original, tables_synthetic, metadata, **kwargs):
