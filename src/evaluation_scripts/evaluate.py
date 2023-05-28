@@ -3,9 +3,8 @@ import json
 import warnings
 import argparse
 
-from rike.evaluation.metrics import (logistic_detection, random_forest_detection,
-                                     svm_detection, knn_detection, mlp_detection, xgboost_detection,
-                                     parent_child_logistic_detection, parent_child_xgb_detection)
+from rike.evaluation.metrics import (xgboost_detection, parent_child_logistic_detection, 
+                                     parent_child_xgb_detection, logistic_detection)
 from rike.evaluation.report import generate_report
 from rike.utils import get_highest_fold
 
@@ -31,18 +30,12 @@ elif args.method == "subsample":
 
 # %%
 single_table_metrics = [
-                        #logistic_detection,
-                        #random_forest_detection,
-                        #svm_detection,
-                        #knn_detection,
-                        # xgboost_detection,
-                        #mlp_detection,
-                     
+                        logistic_detection,
+                        xgboost_detection,
                         ]
 
 multi_table_metrics = [
-                       # 'cardinality',
-                      #  parent_child_xgb_detection,
+                        parent_child_xgb_detection,
                         parent_child_logistic_detection,
                       ]
 
