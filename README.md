@@ -59,4 +59,4 @@ Reports of the metrics will be saved into `metrics_report/` as `.json` files. In
 
 ### Results:
 Visualizations of all the results from the project are in [RESULTS.md](./RESULTS.md).  
-The final report is available [here](./final_report/report.pdf).
+The final report is available [here](./A%20Survey%20and%20Empirical%20Comparison%20of%20Synthetic%20Data%20Generation%20Methods%20for%20Relational%20Data.pdf).
