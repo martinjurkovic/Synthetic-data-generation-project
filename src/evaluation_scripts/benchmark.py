@@ -41,7 +41,7 @@ single_table_metrics = [
 multi_table_metrics = [
                        # 'cardinality',
                         parent_child_xgb_detection,
-                        #parent_child_logistic_detection,
+                        parent_child_logistic_detection,
                       ]
 
 for dataset in datasets:

@@ -35,15 +35,15 @@ single_table_metrics = [
                         #random_forest_detection,
                         #svm_detection,
                         #knn_detection,
-                        xgboost_detection,
+                        # xgboost_detection,
                         #mlp_detection,
                      
                         ]
 
 multi_table_metrics = [
                        # 'cardinality',
-                       # parent_child_xgb_detection,
-                        #parent_child_logistic_detection,
+                      #  parent_child_xgb_detection,
+                        parent_child_logistic_detection,
                       ]
 
 
@@ -51,7 +51,7 @@ multi_table_metrics = [
 report = generate_report(args.dataset_name, args.method,
                          single_table_metrics=single_table_metrics, 
                          multi_table_metrics=multi_table_metrics,
-                         statistical_results=True,
+                         statistical_results=False,
                          save_report=True,
                          limit=limit)
 # print formatted report dict

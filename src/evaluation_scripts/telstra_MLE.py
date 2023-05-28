@@ -20,8 +20,8 @@ import xgboost as xgb
 args = argparse.ArgumentParser()
 args.add_argument("--dataset-name", type=str,
                   default="telstra-competition-dataset")
-args.add_argument("--method", type=str, default="REalTabFormer")
-args.add_argument("--limit", type=int, default=2)
+args.add_argument("--method", type=str, default="REaLTabFormer")
+args.add_argument("--limit", type=int, default=10)
 args.add_argument("--save-report", type=bool, default=True)
 args, unknown = args.parse_known_args()
 
