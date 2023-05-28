@@ -23,6 +23,19 @@
 * 27. (10h): data splitting fixes, SDV data generation, evaluation report, python package creation
 * 29. (3h): Meeting with mentor Strumbelj Erik, meeting between teammates for further work
 
-## May 2023 (16)
+## May 2023 (96)
 * 3. (8h): Commercial tools for data generation: generating and research on google colab
 * 6. (8h): Finish data splitting, add discriminative detection models for evaluation
+* 18. (8h): Implementing RCTGAN generation and supporting HPC generation
+* 19. (8h): RCTGAN, Gretel and Mostlyai data generation
+* 20. (8h): Gretel, REalTabFormer Generation HPC
+* 21. (8h): Metrics and evaluation protocol updates
+* 22. (8h): PostgreSQL setup for mostlyai, conditional sampling implementation, meeting with mentor
+* 23. (8h): Multi table discriminative detection, meeting for cross-team collaboration
+* 24. (8h): CV10 evaluation, fixing bugs and code cleanup, meeting with mentor
+* 25. (8h): Baseline implementation, Telstra ML Efficacy,
+* 26. (8h): Preparing the final report and running final HPC experiments
+* 27. (8h): Full benchmark packaging
+* 28. (8h): Final report and visualizations
+
+## Total: 165.5h (full hours)
